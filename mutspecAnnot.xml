@@ -1,0 +1,160 @@
+<tool id="mutSpecannot" name="MutSpec Annot" version="0.1" hidden="false">
+<description>Annotate variants with ANNOVAR and other databases</description>
+
+<requirements>
+    <requirement type="set_environment">SCRIPT_PATH</requirement>
+    <requirement type="package" version="5.18.1">perl</requirement>
+</requirements>
+
+<command interpreter="bash">
+        mutspecAnnot_wrapper.sh
+        $output
+        --refGenome ${refGenome}
+        --AVDB ${refGenome.fields.path}
+        --interval $interval
+        $input
+</command>
+
+<inputs>
+	<param name="input" type="data" format="txt" label="Input file" help="Select a single file, multiple files or a dataset collection"/>
+	
+	<param name="refGenome" type="select" label="Reference genome" help="Select the reference genome that was used for generating your data">
+        <options from_data_table="annovar_index" />
+    </param>
+    
+	<param name="interval" type="text" value="10" label="Sequence context of variants" help="Number of retrieved bases that flank variants in 5' and 3'"/>
+</inputs>
+
+<outputs>
+	<data name="output" type="data" format="tabular" label="${input.name} annotated" />
+</outputs> 
+
+<help>
+
+**What it does**
+
+MutSpect-Annot provides functional annotations from `ANNOVAR software`__ (June 2015 version is provided here), as well as the strand transcript orientation (from refGene database) and sequence context of variants (extrated from the reference genome selected).
+
+.. __: http://www.openbioinformatics.org/annovar/
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Input formats**
+
+MutSpect-Annot accepts files in VCF (version 4.1) or in tab-delimited (TAB) format.
+
+.. class:: infomark
+
+TIP: If your data is not TAB delimited, use *Text manipulation -> convert*
+
+.. class:: warningmark
+
+Filenames must be &#60;= 31 characters.
+
+.. class:: warningmark
+
+These files should contain at least four columns describing for each variant, the chromosome number, the start genomic position, the reference allele and the alternate allele
+
+.. class:: warningmark 
+
+The tool supports different column names (**names are case-sensitive**) depending on the source file as follows:
+
+**mutect** :     contig position ref_allele alt_allele
+
+**vcf** :        CHROM POS REF ALT
+
+**cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
+
+**icgc** :       chromosome chromosome_start reference_genome_allele mutated_to_allele
+
+**tcga** :       Chromosome Start_position Reference_Allele Tumor_Seq_Allele2
+
+**ionTorrent** : chr Position Ref Alt            
+
+**proton** :     Chrom Position Ref Variant        
+
+**varScan2** :   Chrom Position Ref VarAllele
+
+**annovar** :    Chr Start Ref Obs                 
+
+**custom** :     Chromosome Start Wild_Type Mutant
+
+.. class:: infomark
+
+For MuTect output files, only confident calls are considered (variants containing the string REJECT in the judgement column are not annotated and excluded from the MutSpect-Annot output) as other calls are very likely to be dubious calls or artefacts.
+
+.. class:: infomark
+
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
+
+.. class:: warningmark
+
+If multiple input files are specified they should be from the **same genome build**
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Output**
+
+The output is a tabular text file, that contains the retrieved annotations in the first columns and all columns from the original file at the end.
+
+.. class:: infomark
+
+Variants on chromosome M and random chromosomes are not considered for the annotation and excluded from MutSpec-Annot output.
+
+The following annotations are retrieved:
+
+**ANNOVAR annotations**
+
+An example of annotations retrieved by the tool.
+
+Gene-based: RefSeqGene, UCSC Known Gene and Ensembl Gene
+
+Region-based: localization of the variant on cytogenetic band (cytoBand), variant reported in Genome-Wide association studies (gwasCatalog) and variant mapped to segmental duplications (genomicSuperDups)
+
+Filter-based: 
+
+    - dbSNP: For human genome there is two versions available: the defaul version (snp) and a pre-filtered version (snpNonFlagged). In the pre-filtered version all SNPs &#139; 1% minor allele frequency (MAF) (or unknown), mapping only once to reference assembly, or flagged in dbSnp as clinically associated are removed from the full dbSNP database and therefore not present in this version.
+
+    - 1000 Genomes Project (ALL, AFR (African), AMR (Admixed American), EAS (East Asian), EUR (European), SAS (South Asian))
+
+    - ESP: Exome Sequencing Project (ALL, AA (African American), EA (European American))
+
+    - ExAC: Exome Aggregation Consortium (ALL, AFR (African), AMR (Admixed American), EAS (East Asian), FIN (Finnish), NFE (Non-finnish European), OTH (other), SAS (South Asian))
+
+    - LJB26: SIFT, PolyPhen-2 (HDIV and HVAR)
+
+**Transcript orientation**
+
+The strand annotation corresponding to transcript orientation within genic regions is recovered from RefSeqGene database.
+
+**Sequence context**
+
+Flanking bases in both sides in 5' and 3' of the variant position retrieved from the reference genome used.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Example**
+
+Annotate the following file::
+
+     Chromosome  Start_Position  End_Position  Reference_Allele  Tumor_Seq_Allele2
+     chr7        121717919       121717920     -                 G
+     chr1        230846235       230846235     T                 A
+     chr14       33290999        33290999      A                 G
+     chr12       8082458         8082458       C                 T
+     chr4        70156391        70156391      T                 C
+
+Will produce::
+
+     Chr    Start      End        Ref  Alt  Func.refGene  Gene.refGene  ExonicFunc.refGene    AAChange.refGene                           genomicSuperDups                   snp138       1000g2014oct_all  esp6500si_all  Strand  context  Chromosome  Start_Position  End_Position  Reference_Allele  Tumor_Seq_Allele2
+     chr7   121717919  121717920  -    G    exonic        AASS          frameshift insertion  AASS:NM_005763:exon23:c.2634dupC:p.A879fs  NA                                 rs147476318  NA                NA             -       GCG      chr7        121717919       121717920     -                 G
+     chr1   230846235  230846235  T    A    exonic        AGT           nonsynonymous SNV     AGT:NM_000029:exon2:c.A362T:p.H121L        NA                                 NA           NA                NA             -       GTG      chr1        230846235       230846235     T                 A
+     chr14  33290999   33290999   A    G    exonic        AKAP6         nonsynonymous SNV     AKAP6:NM_004274:exon13:c.A3980G:p.D1327G   NA                                 NA           NA                NA             +       GAC      chr14       33290999        33290999      A                 G
+     chr12  8082458    8082458    C    T    exonic        SLC2A3        nonsynonymous SNV     SLC2A3:NM_006931:exon6:c.G683A:p.R228Q     NA                                 rs200481428  0.000199681       NA             -       CCG      chr12       8082458         8082458       C                 T
+     chr4   70156391   70156391   T    C    exonic        UGT2B28       nonsynonymous SNV     UGT2B28:NM_053039:exon5:c.T1172C:p.V391A   score=0.949699;Name=chr4:70035680  NA           0.000199681       NA             +       GTA      chr4        70156391        70156391      T                 C
+
+
+</help>
+
+</tool>

@@ -1,0 +1,85 @@
+<tool id="mutSpecsplit" name="MutSpec Split" version="0.1" hidden="false" force_history_refresh="True">
+<description>Split a tabular file by sample ID</description>
+
+<requirements>
+    <requirement type="set_environment">SCRIPT_PATH</requirement>
+    <requirement type="package" version="5.18.1">perl</requirement>
+</requirements>
+
+<command interpreter="perl">
+        mutspecSplit.pl -f $input -c $column
+</command>
+
+<inputs>
+	<param name="input" type="data" format="tabular" label="Input file" help="If using the batch mode (multiple datasets), all files must contain the same sample id column. The tool doesn't support dataset list as input !" />
+	<param name="column" type="data_column" data_ref="input" label="Split by" use_header_names="true"/>
+</inputs>
+
+<outputs>
+    <collection name="splitted_output" type="list" label="collection">
+  	    <discover_datasets pattern="__name__" ext="tabular" directory="outputFiles"/>
+    </collection> 
+</outputs>
+
+<help>
+
+**What it does**
+
+This tool splits a file into several files based on the content of the selected column.
+It can be used for example to split a file that contains data on 10 samples into 10 files using the same sample ID column.
+The resulting files are saved into a dataset list/collection.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Input**
+
+One or multiple tab delimited text files.
+
+If multiple files are selected, they should all have the same column on which you want to do the split.
+
+.. class:: warningmark
+
+The tool doesn't support dataset list as input !!!
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Output**
+
+A dataset list containing tab delimited text files resulting from splitting the input file(s).
+
+.. class:: warningmark
+
+If a large number of file are generated, you'll need to refresh the history to see all files included in the dataset list. The entire list of file may still not be correctly displayed due to a known bug in Galaxy that may be fixed in future versions.
+ 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Example**
+
+Split by sample ID the following file::
+
+     Chr    Start       End       Ref  Alt  Func.refGene  Gene.refGene  ExonicFunc.refGene  AAChange.refGene             genomicSuperDups  1000g2012apr_all  snp137  esp6500si_all  cosmic67                           Strand  Context               Mutation_GRCh37_chromosome_number  Mutation_GRCh37_genome_position  Description_Ref_Genomic  Description_Alt_Genomic  Sample_name  Pubmed_PMID  Age  Comments
+     chr12  82752552    82752552  G    A    exonic        METTL25       nonsynonymous SNV   NM_032230:c.G208A:p.E70K     NA                NA                NA      NA             NA                                 +       GTCGGAGACGGAGGCCCTGCC chr12                              82752552                         G                        A                        APA29        23913001     2    NA
+     chr11  86663436    86663436  C    A    exonic        FZD4          nonsynonymous SNV   NM_012193:c.G362T:p.C121F    NA                NA                NA      NA             NA                                 -       GACTGAAAGACACATGCCGCC chr11                              86663436                         C                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
+     chr12  57872994    57872994  G    A    exonic        ARHGAP9       nonsynonymous SNV   NM_001080157:c.C196T:p.R66C  NA                NA                NA      0.000077       ID=COSM431582;OCCURENCE=2(breast)  -       GCTTCTAGGCGTCTTGCCAAC chr12                              57872994                         G                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
+
+
+Will create a dataset list with two dataset:
+
+
+APA29::
+
+     Chr    Start       End       Ref  Alt  Func.refGene  Gene.refGene  ExonicFunc.refGene  AAChange.refGene             genomicSuperDups  1000g2012apr_all  snp137  esp6500si_all  cosmic67                           Strand  Context               Mutation_GRCh37_chromosome_number  Mutation_GRCh37_genome_position  Description_Ref_Genomic  Description_Alt_Genomic  Sample_name  Pubmed_PMID  Age  Comments
+     chr12  82752552    82752552  G    A    exonic        METTL25       nonsynonymous SNV   NM_032230:c.G208A:p.E70K     NA                NA                NA      NA             NA                                 +       GTCGGAGACGGAGGCCCTGCC chr12                              82752552                         G                        A                        APA29        23913001     2    NA
+
+
+APA12::
+
+     Chr    Start       End       Ref  Alt  Func.refGene  Gene.refGene  ExonicFunc.refGene  AAChange.refGene             genomicSuperDups  1000g2012apr_all  snp137  esp6500si_all  cosmic67                           Strand  Context               Mutation_GRCh37_chromosome_number  Mutation_GRCh37_genome_position  Description_Ref_Genomic  Description_Alt_Genomic  Sample_name  Pubmed_PMID  Age  Comments
+     chr11  86663436    86663436  C    A    exonic        FZD4          nonsynonymous SNV   NM_012193:c.G362T:p.C121F    NA                NA                NA      NA             NA                                 -       GACTGAAAGACACATGCCGCC chr11                              86663436                         C                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
+     chr12  57872994    57872994  G    A    exonic        ARHGAP9       nonsynonymous SNV   NM_001080157:c.C196T:p.R66C  NA                NA                NA      0.000077       ID=COSM431582;OCCURENCE=2(breast)  -       GCTTCTAGGCGTCTTGCCAAC chr12                              57872994                         G                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
+
+
+
+</help>
+
+</tool>  

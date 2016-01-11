@@ -1,0 +1,17 @@
+#This is a sample file distributed with Galaxy that is used by the
+#MutSpec-Annot tools. The mm9_listAVDB.txt has this format (white space 
+#characters are TAB characters):
+#
+#<RefGenome_DatabaseName>	<operation>
+#
+# 
+#
+#mm9_refGene.txt	g
+#mm9_genomicSuperDups.txt	r
+#mm9_snp128.txt	f
+mm9_refGene.txt	g
+mm9_knownGene.txt	g
+mm9_ensGene.txt	g
+mm9_cytoBand.txt	r
+mm9_genomicSuperDups.txt	r
+mm9_snp128.txt	f

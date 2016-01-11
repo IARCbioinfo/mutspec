@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<tool_dependency>
+  <set_environment version="1.0">
+    <environment_variable name="SCRIPT_PATH" action="set_to">$REPOSITORY_INSTALL_DIR</environment_variable>
+  </set_environment>
+	
+	<package name="perl" version="5.18.1">
+    <install version="1.0">
+      <actions>
+        <action type="setup_perl_environment">
+          <repository name="package_perl_5_18" owner="iuc">
+            <package name="perl" version="5.18.1" prior_installation_required="True"/>
+          </repository> 
+
+          <repository name="package_r_3_1_2" owner="iuc">
+            <package name="R" version="3.0.1" />
+          </repository>
+
+          <!-- allow downloading and installing an Perl package from cpan.org-->
+          <package>http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/IPC-Run-0.94.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-2013031301.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/F/FA/FANGLY/Statistics-R-0.33.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/J/JM/JMCNAMARA/OLE-Storage_Lite-0.19.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/J/JM/JMCNAMARA/Spreadsheet-WriteExcel-2.40.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/D/DL/DLUX/Parallel-ForkManager-0.7.5.tar.gz</package>
+        </action>
+      <action type="set_environment">
+        <environment_variable name="PERL5LIB" action="prepend_to">$INSTALL_DIR/lib/perl5</environment_variable>
+      </action>
+      </actions>
+    </install>
+  </package>
+
+  <package name="perl" version="5.18.1">
+    <repository name="package_perl_5_18" owner="iuc" prior_installation_required="True"/>
+  </package>
+    
+  <package name="weblogo" version="3.3">
+    <repository name="package_weblogo_3_3" owner="devteam" prior_installation_required="True"/>
+  </package>
+    
+  <package name="numpy" version="1.7.1">
+    <repository name="package_numpy_1_7" owner="iuc" prior_installation_required="True"/>
+  </package>
+
+	<package name="R" version="3.1.2">
+    <repository name="package_r_3_1_2" owner="iuc" prior_installation_required="True"/>
+  </package>
+    
+  <package name="mutspec" version="0.1">
+    <repository name="package_r_mutspec_0_1" owner="iarc" prior_installation_required="True"/>
+  </package>
+    
+</tool_dependency>

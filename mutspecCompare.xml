@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<tool id="mutSpeccompare" name="MutSpec Compare" version="0.0.1">
+<description>Compare signatures with the cosine similarity method</description>
+
+<requirements>
+    <requirement type="set_environment">SCRIPT_PATH</requirement>
+    <requirement type="package" version="3.1.2">R</requirement>
+    <requirement type="package" version="0.1">mutspec</requirement>
+</requirements>
+
+<command interpreter="bash">
+	mutspecCompare_wrapper.sh
+	$newsign
+	$output
+	#if $refSignatureSource.source == "fromtable":
+		\$SCRIPT_PATH/Frequency-COSMICv72-Hupki.txt
+	#else
+		${refSignatureSource.h_publish}
+	#end if
+</command>
+
+<inputs>
+	<conditional name="refSignatureSource">
+		<param name="source" type="select" label="Reference signatures" help="You may select the provided file that includes published signatures (see details further below) or your own reference file">
+			<option value="fromtable">Use COSMICv72_Hupki2014</option>
+			<option value="history">Use one from my history</option>
+		</param>
+		<when value="fromtable">
+			<options from_data_table="published_signature_matrice" />
+		</when>
+		<when value="history">
+			<param name="h_publish" type="data" format="tabular" label="Select a file from my history" help="Matrix correctly formated (see details further below)"/>
+		</when>
+    </conditional>
+    	
+	<param name="newsign" type="data" format="html" label="Newly identified signature" help="Select an output of the tool MutSpec-NMF"/>
+	
+</inputs>
+
+<outputs>
+	<data name="output" format="html" label="Similarity_Matrix on dataset ${newsign.name}" />
+</outputs> 
+
+
+<help>
+
+**What it does**
+
+Compare two matrices containing published and newly identified mutation signatures using the `cosine similarity`__ method as already used by `Alexandrov et al. 2013`__, `Olivier et al. 2014`__ or `Schulze et al. 2015`__
+
+.. __: http://en.wikipedia.org/wiki/Cosine_similarity
+
+.. __: http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3588146/
+
+.. __: http://www.nature.com/srep/2014/140327/srep04482/full/srep04482.html
+
+.. __: http://www.nature.com/ng/journal/v47/n5/fig_tab/ng.3252_SF3.html
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Output**
+
+A HTML page displaying a heatmap representing the similarity between the new signatures and the published ones.
+
+Values close to 1 (red) indicate a high similarity between the signatures.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Published signatures**
+
+The reference signatures matrix (COSMICv72-Hupki2014 matrix) includes
+
+1. The 30 signatures published in `COSMIC database, v72`__
+
+2. The 4 experimental signatures obtained in mouse cells for AA, MNNG, BaP and AID that were published in `Olivier et al. 2014`__
+
+
+.. __: http://cancer.sanger.ac.uk/cosmic/signatures
+
+.. __: http://www.nature.com/srep/2014/140327/srep04482/full/srep04482.html
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Example**
+
+Matrix of known signatures
+
++-------------------+---------------+-----------------------+--------------+--------------+
+| Substitution Type | Trinucleotide | Somatic Mutation Type |  Signature 1 |  Signature 2 |
++===================+===============+=======================+==============+==============+
+|        C>A        |      ACA      |         A[C>A]A       | 0.0110983262 | 0.0006827082 +
++-------------------+---------------+-----------------------+--------------+--------------+
+|        C>A        |      ACC      |         A[C>A]C       | 0.0091493407 | 0.0006191072 +
++-------------------+---------------+-----------------------+--------------+--------------+
+|        C>A        |      ACG      |         A[C>A]G       | 0.0014900705 | 0.000099279  +
++-------------------+---------------+-----------------------+--------------+--------------+
+|        C>A        |      ACT      |         A[C>A]T       | 0.0062338852 | 0.0003238914 +
++-------------------+---------------+-----------------------+--------------+--------------+
+|        C>A        |      CCA      |         C[C>A]A       | 0.0065958701 | 0.000677445  +
++-------------------+---------------+-----------------------+--------------+--------------+
+|        C>A        |      CCC      |         C[C>A]C       | 0.0073423678 | 0.000213681  +
++-------------------+---------------+-----------------------+--------------+--------------+
+
+
+</help>
+
+</tool>
