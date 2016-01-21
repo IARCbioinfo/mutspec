@@ -14,4 +14,4 @@ mm10_knownGene.txt	g
 mm10_ensGene.txt	g
 mm10_cytoBand.txt	r
 mm10_genomicSuperDups.txt	r
-mm10_snp137.txt	f
+mm10_snp138.txt	f
