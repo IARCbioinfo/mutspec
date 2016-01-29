@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 25/08/15             #
+# Last update: 29/01/16             #
 #-----------------------------------#
 
 use strict;
@@ -210,9 +210,8 @@ sub RecoverInputFormat
 		`rm $folder_temp/$filename.txt`;
 
 
-		# Recover the name and the number of the columns that contain the chromosome number, the start position, the ref and alt alleles.
-		# Use the dictionary for recover the names and the position of the columns
-		RecoverColNameAuto("$folder_temp/$filename-ColumnCorrect.txt", $$refS_headerOriginalFile, \$chrValue, \$positionValue, \$refValue, \$altValue);
+		# Set the col number for the chr,start,ref and alt
+		($chrValue, $positionValue, $refValue, $altValue) = (0, 1, 3, 4);
 	}
 	### MuTect files
 	elsif($inputFormat eq "mutect")
@@ -551,13 +550,48 @@ sub Convert2AV
 		elsif($tab[$chr_value] =~ /chr/) { $chr = $tab[$chr_value]; }
 		else                             { $chr = "chr".$tab[$chr_value]; }
 
-		# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
-		my $end = 0;
-		if($tab[$ref_value] =~ /\-/) { $end = $tab[$start_value]; }
-		else { $end = $tab[$start_value] + (length($tab[$alt_value]) - 1); }
+		### Reformat the Indels for Annovar
+		# chr1	85642631	C	    CT  => chr1	85642631	85642631	-	  T   (mm10)
+		# chr5	26085724	ACTT	A   => chr5	26085725	26085727	CTT	-   (mm10)
+		if( (length($tab[$ref_value]) != 1) || (length($tab[$alt_value]) != 1) )
+		{
+			my @tabRef = split("", $tab[$ref_value]);
+			my @tabAlt = split("", $tab[$alt_value]);
 
-		print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
-		foreach my $elt (@tab) { print OUT "\t$elt"; }
+			# Remove the first base
+			my $ref2 = join("", @tabRef[1 .. $#tabRef]);
+			my $alt2 = join("", @tabAlt[1 .. $#tabAlt]);
+
+			if(length($alt2) == 0)
+			{
+				my $altOK   = "-";
+				my $startOK = $tab[$start_value] + 1;
+				my $stopOK  = $startOK + length($ref2) - 1;
+				print OUT $chr."\t".$startOK."\t".$stopOK."\t".$ref2."\t".$altOK;
+			}
+
+			if(length($ref2) == 0)
+			{
+				my $refOK = "-";
+				print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$refOK."\t".$alt2;
+			}
+		}
+		else
+		{
+			# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
+			if($tab[$ref_value] =~ /\-/)
+			{
+				print OUT "$chr\t$tab[$start_value]\t$tab[$start_value]\t$tab[$ref_value]\t$tab[$alt_value]";
+			}
+			else
+			{
+				my $end = $tab[$start_value] + (length($tab[$alt_value]) - 1);
+				print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
+			}
+		}
+
+		## Print the original file at the end
+		foreach  (@tab) {  print OUT "\t$_"; }
 		print OUT "\n";
 	}
 	close F1; close OUT;
@@ -1057,7 +1091,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory input
 
 
- Version: 08-2015 (Aug 2015)
+ Version: 01-2016 (Janv 2016)
 
 
 =head1 OPTIONS
