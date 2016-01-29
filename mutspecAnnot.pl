@@ -555,38 +555,45 @@ sub Convert2AV
 		# chr5	26085724	ACTT	A   => chr5	26085725	26085727	CTT	-   (mm10)
 		if( (length($tab[$ref_value]) != 1) || (length($tab[$alt_value]) != 1) )
 		{
-			my @tabRef = split("", $tab[$ref_value]);
-			my @tabAlt = split("", $tab[$alt_value]);
-
-			# Remove the first base
-			my $ref2 = join("", @tabRef[1 .. $#tabRef]);
-			my $alt2 = join("", @tabAlt[1 .. $#tabAlt]);
-
-			if(length($alt2) == 0)
+			### First check if the indels in the file are not already correctly formated
+			if( ($tab[$ref_value] eq "-") || ($tab[$alt_value] eq "-") )
 			{
-				my $altOK   = "-";
-				my $startOK = $tab[$start_value] + 1;
-				my $stopOK  = $startOK + length($ref2) - 1;
-				print OUT $chr."\t".$startOK."\t".$stopOK."\t".$ref2."\t".$altOK;
+				# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
+				# Insertion: start = start & end = start
+				if($tab[$ref_value] =~ /\-/)
+				{
+					print OUT "$chr\t$tab[$start_value]\t$tab[$start_value]\t$tab[$ref_value]\t$tab[$alt_value]";
+				}
+				## Deletion: start = start & end = start + length(del) -1
+				else
+				{
+					my $end = $tab[$start_value] + (length($tab[$ref_value]) - 1);
+					print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
+				}
 			}
-
-			if(length($ref2) == 0)
-			{
-				my $refOK = "-";
-				print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$refOK."\t".$alt2;
-			}
-		}
-		else
-		{
-			# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
-			if($tab[$ref_value] =~ /\-/)
-			{
-				print OUT "$chr\t$tab[$start_value]\t$tab[$start_value]\t$tab[$ref_value]\t$tab[$alt_value]";
-			}
+			### Indels not correctly formated for Annovar
 			else
 			{
-				my $end = $tab[$start_value] + (length($tab[$alt_value]) - 1);
-				print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
+				my @tabRef = split("", $tab[$ref_value]);
+				my @tabAlt = split("", $tab[$alt_value]);
+
+				# Remove the first base
+				my $ref2 = join("", @tabRef[1 .. $#tabRef]);
+				my $alt2 = join("", @tabAlt[1 .. $#tabAlt]);
+
+				if(length($alt2) == 0)
+				{
+					my $altOK   = "-";
+					my $startOK = $tab[$start_value] + 1;
+					my $stopOK  = $startOK + length($ref2) - 1;
+					print OUT $chr."\t".$startOK."\t".$stopOK."\t".$ref2."\t".$altOK;
+				}
+
+				if(length($ref2) == 0)
+				{
+					my $refOK = "-";
+					print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$refOK."\t".$alt2;
+				}
 			}
 		}
 
