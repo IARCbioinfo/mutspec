@@ -1,0 +1,12 @@
+#This is a sample file distributed with Galaxy that is used by the
+#MutSpec-Annot tools. The hg18_listAVDB.txt has this format (white space 
+#characters are TAB characters):
+#
+#<RefGenome_DatabaseName>	<operation>
+#
+# 
+#
+#rn6_refGene.txt	g
+#rn6_genomicSuperDups.txt	r
+#rn6_snp138.txt	f
+rn6_refGene.txt	g
