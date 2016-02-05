@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 01/12/15             #
+# Last update: 05/02/16             #
 #-----------------------------------#
 
 use strict;
@@ -405,8 +405,6 @@ sub ReportMutDist
 		# Initialisation of the hash
 		my @tab_mutation   = qw(C:G>A:T C:G>G:C C:G>T:A T:A>A:T T:A>C:G T:A>G:C);
 		my @tab_aaChange   = ("NonTr", "Tr", "TotalMutG");
-		my @tab_humanChrom = qw(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 X Y);
-		my @tab_mouseChrom = qw(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 X Y);
 		my @tabExoFunc     = ("frameshift insertion", "frameshift deletion", "frameshift block substitution", "frameshift substitution", "stopgain", "stoploss", "nonframeshift insertion", "nonframeshift deletion", "nonframeshift substitution", "nonframeshift block substitution", "nonsynonymous SNV", "synonymous SNV", "unknown", "NA");
 
 		# Total number of SBS on the genomic strand
@@ -2725,34 +2723,47 @@ sub ReportMutDist
 
 		sub CountSBSPerChr
 		{
-			# Top-Left
+			#### Top-Left
 			$ws->write($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+4, $colStart_SBSdistrBySeg, "Table 6. SBS distribution per chromosome", $format_topLeft); $ws->set_row($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+4, 18); # Set the height of the row to 0.25"
-			# Top
+			#### Top
 			for(my $i=1; $i<8; $i++) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+4, $colStart_SBSdistrBySeg+$i, $format_top); }
-			# Top-Right
+			#### Top-Right
 			$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+4, $colStart_SBSdistrBySeg+8, $format_topRight);
-			# Right
+			#### Right
 			$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+5, $colStart_SBSdistrBySeg+8, $format_right); $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+6, $colStart_SBSdistrBySeg+8, $format_right);
-			# Bottom-Right
-			if($refGenome =~ /hg/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+33, $colStart_SBSdistrBySeg+8, $format_bottomRight); }
-			else { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg+8, $format_bottomRight); }
-			# Bottom
+
+			#### Bottom-Right
+			# Human genome = 24 chromosomes
+			if($refGenome =~ /hg/)    { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+33, $colStart_SBSdistrBySeg+8, $format_bottomRight); }
+			# Mouse genome = 21 chromosomes
+			if($refGenome =~ /mm/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg+8, $format_bottomRight); }
+			# Rat genome = 22 chromosomes
+			if($refGenome =~ /rn/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+31, $colStart_SBSdistrBySeg+8, $format_bottomRight); }
+
+			#### Bottom
 			if($refGenome =~ /hg/)
 			{
 				$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+33, $colStart_SBSdistrBySeg+1, $format_bottom);
 				for(my $i=3; $i<=7; $i++) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+33, $colStart_SBSdistrBySeg+$i, $format_bottom); }
 			}
-			else
+			if($refGenome =~ /mm/)
 			{
 				$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg+1, $format_bottom);
 				for(my $i=3; $i<=7; $i++) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg+$i, $format_bottom); }
 			}
-			# Left
+			if($refGenome =~ /rn/)
+			{
+				$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+31, $colStart_SBSdistrBySeg+1, $format_bottom);
+				for(my $i=3; $i<=7; $i++) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+31, $colStart_SBSdistrBySeg+$i, $format_bottom); }
+			}
+
+			#### Left
 			$ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+5, $colStart_SBSdistrBySeg, $format_left); $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+6, $colStart_SBSdistrBySeg, $format_left); $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+7, $colStart_SBSdistrBySeg, $format_left);
 
-			# Bottom-left
+			#### Bottom-left
 			if($refGenome =~ /hg/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+33, $colStart_SBSdistrBySeg, $format_bottomLeft);  }
-			else { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg, $format_bottomLeft); }
+			if($refGenome =~ /mm/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+30, $colStart_SBSdistrBySeg, $format_bottomLeft); }
+			if($refGenome =~ /rn/) { $ws->write_blank($rowStart_SBSdistrBySeg+8+$nb_func+(($nb_func+4)*2)+31, $colStart_SBSdistrBySeg, $format_bottomLeft); }
 		}
 
 		sub ShortTriNtContext
@@ -3223,7 +3234,7 @@ mutSpec-Stat
         -h,        --help                        print help message
         -m,        --man                         print complete documentation
         -v,        --verbose                     use verbose output
-                   --refGenome                   the reference genome to use (hg19 or mm9)
+                   --refGenome                   the reference genome to use (human, mouse or rat genomes)
         -o,        --outfile <string>            output directory for the result. If none is specify the result will be write in the same directory as the input file
         -temp      --pathTemporary <string>      the path for saving the temporary files
                    --pathSeqRefGenome            the path to the fasta reference sequences
@@ -3235,7 +3246,7 @@ Function: automatically run a pipeline and calculate various statistics on mutat
 
  Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample input
 
- Version: 10-2015 (Oct 2015)
+ Version: 02-2016 (Feb 2016)
 
 
 =head1 OPTIONS
@@ -3256,7 +3267,7 @@ use verbose output.
 
 =item B<--refGenome>
 
-the reference genome to use, could be hg19 or mm9.
+the reference genome to use, could be human, mouse or rat genomes.
 
 =item B<--outfile>
 
