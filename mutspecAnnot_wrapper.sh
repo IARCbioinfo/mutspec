@@ -2,7 +2,7 @@
 
 output=$1;shift
 refg=$2
-input=${7}
+input=${9}
 
 command -v table_annovar.pl >/dev/null 2>&1 || {
       echo "ERROR : table_annovar.pl not found. Add annovar scripts to your galaxy path !" ;
