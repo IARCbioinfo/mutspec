@@ -12,6 +12,7 @@
         --refGenome ${refGenome}
         --AVDB ${refGenome.fields.path}
         --interval $interval
+        --fullAnnotation ${annotation_type}
         $input
 </command>
 
@@ -23,6 +24,9 @@
     </param>
     
 	<param name="interval" type="text" value="10" label="Sequence context of variants" help="Number of retrieved bases that flank variants in 5' and 3'"/>
+
+    <param name="annotation_type" type="boolean" checked="true" truevalue="yes" falsevalue="no" label="Complete annotations" help="Select No if you have a file with millions of variants and you are just interested in having a quick overview of the mutational spectrum. Only the annotation from refGene, the strand orientation and the sequence context will be added." />
+
 </inputs>
 
 <outputs>
