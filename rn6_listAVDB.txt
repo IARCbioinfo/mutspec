@@ -10,3 +10,5 @@
 #rn6_genomicSuperDups.txt	r
 #rn6_snp138.txt	f
 rn6_refGene.txt	g
+rn6_ensGene.txt	g
+rn6_snp146.txt	f
