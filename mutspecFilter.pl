@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecFilter.pl          #
-# Last update: 26/08/15             #
+# Last update: 18/03/16             #
 #-----------------------------------#
 
 use strict;
@@ -19,7 +19,7 @@ use File::Path;
 
 our ($verbose, $man, $help)             = (0, 0, 0);    # Parse options and print usage if there is a syntax error, or if usage was explicitly requested.
 our ($dbSNP_value, $segDup, $esp, $thG) = (0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome.
-our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use (hg19 or mm9).
+our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
 our ($listAVDB)                         = "empty";      # Text file with the list Annovar databases.
 our ($dir)                              = "";
 
@@ -33,26 +33,34 @@ pod2usage(-verbose=>0, -exitval=>1, -output=>\*STDERR) if(@ARGV == 0); # No argu
 pod2usage(-verbose=>0, -exitval=>1, -output=>\*STDERR) if(@ARGV == 2); # Only one argument is expected to be pass to @ARGV (the input)
 
 
-############ Check flags ############
-if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
-# If the dbSNP value is not equal to zero filter using dbSNP DB
+
+# If the dbSNP value is not equal to zero filter using the dbSNP column specify
 our $dbSNP = 0;
 if($dbSNP_value > 0) { $dbSNP = 1; }
 
 
-############ Annovar databases ############
-my $protocol = "";
-ExtractAVDBName($listAVDB, \$protocol);
-my @tab_protocol = split(",", $protocol);
-############ Annovar databases ############
+############ Check flags ############
+if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
 
-
-############ Process Argument ############
-my ($filename, $directories, $suffix) = fileparse($input, qr/\.[^.]*/);
-
-if(scalar(@tab_protocol) == 3)
+# Zero databases is specified
+if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) )
 {
-	my ($segDup_name, $espAll_name, $thousandGenome_name) = ("", "", "");
+	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome) or 1000 genome (only for human genome)\n";
+	exit;
+}
+
+
+
+############ Recover the name of the databases to filter against ############
+my ($segDup_name, $espAll_name, $thousandGenome_name) = ("", "", "");
+my @tab_protocol = ();
+
+if( ($segDup == 1) || ($esp == 1) || ($thG == 1) )
+{
+	### Recover the name of the column
+	my $protocol = "";
+	ExtractAVDBName($listAVDB, \$protocol);
+	@tab_protocol = split(",", $protocol);
 
 	for(my $i=0; $i<=$#tab_protocol; $i++)
 	{
@@ -60,143 +68,113 @@ if(scalar(@tab_protocol) == 3)
 		elsif($tab_protocol[$i] =~ /1000g/)         { $thousandGenome_name = $tab_protocol[$i]; }
 		elsif($tab_protocol[$i] =~ /esp/)           { $espAll_name = $tab_protocol[$i]; }
 	}
-
-	FilterAV_human($input, $filename, $segDup_name, $espAll_name, $thousandGenome_name);
 }
-elsif(scalar(@tab_protocol) == 1)
+
+
+############ Filter the file ############
+filterAgainstPublicDB();
+
+
+print STDOUT "\tFilter selected\tdbSNP = ".$dbSNP."\tsegDup = ".$segDup."\tesp = ".$esp."\tthG = ".$thG."\n";
+
+
+sub filterAgainstPublicDB
 {
-	my $segDup_name = $tab_protocol[0];
-
-	FilterAV_mouse($input, $filename, $segDup_name);
-}
-else
-{
-	print STDERR "There is more databases specify than the possibility!!!\nAvailable databases for filtering are dbSNP, segDup (for human and mouse genome) and esp, 1000g (for human genomes only)!!!\nYour have specify @tab_protocol databases\n";
-}
-############ Process Argument ############
-
-# Filter an annotated file using the databases dbSNP, SegDup, ESP and 1000genome
-sub FilterAV_human
-{
-	my ($inputFile, $filename, $segDup_name, $espAll_name, $thousandGenome_name) = @_;
-
-	my $segDup_value         = recoverNumCol($inputFile, $segDup_name);
-	my $espAll_value         = recoverNumCol($inputFile, $espAll_name);
-	my $thousandGenome_value = recoverNumCol($inputFile, $thousandGenome_name);
-
-	$filename =~ s/\./TOTO/; my @temp = split("TOTO", $filename); $filename =~ s/TOTO/\./;
-
 	open(FILTER, ">", "$output") or die "$!: $output\n";
-	open(F1, $inputFile) or die "$!: $inputFile\n";
-	my $header = <F1>; print FILTER $header;
 
+	open(F1, $input) or die "$!: $input\n";
+	my $header = <F1>; print FILTER $header;
 	while(<F1>)
 	{
-		if ($_ =~ /^#/) { next; }
-
 		$_      =~ s/[\r\n]+$//;
 		my @tab = split("\t", $_);
 
-		my $segDupInfo = "";
-		if($tab[$segDup_value] ne "NA") # Score=0.907883;Name=chr9:36302931
-		{
-			my @segDup = split(";", $tab[$segDup_value]);
-			$segDup[0] =~ /Score=(.+)/;
-			$segDupInfo = $1;
-		}
-		else { $segDupInfo = $tab[$segDup_value]; }
+		my ($segDupInfo, $espAllInfo, $thgInfo) = (0, 0 ,0);
 
-		# Replace NA by 0 for making test on the same type of variable
-		$segDupInfo =~ s/NA/0/; $tab[$espAll_value] =~ s/NA/0/; $tab[$thousandGenome_value] =~ s/NA/0/;
+		if($segDup == 1)
+		{
+			my $segDup_value = recoverNumCol($input, $segDup_name);
+			$segDupInfo      = formatSegDupInfo($tab[$segDup_value]);
+			# Replace NA by 0 for making test on the same type of variable
+			$segDupInfo =~ s/NA/0/;
+		}
+		if($esp == 1)
+		{
+			my $espAll_value = recoverNumCol($input, $espAll_name);
+			$espAllInfo      = $tab[$espAll_value];
+			# Replace NA by 0 for making test on the same type of variable
+			$espAllInfo      =~ s/NA/0/;
+		}
+		if($thG == 1)
+		{
+			my $thousandGenome_value = recoverNumCol($input, $thousandGenome_name);
+			# Replace NA by 0 for making test on the same type of variable
+			$thgInfo = $tab[$thousandGenome_value];
+			$thgInfo =~ s/NA/0/;
+		}
+
 
 		##############################
 		#   			One Filter 				 #
 		##############################
 		# Remove all the variants present in dbSNP
-		if( ($dbSNP == 1) && ($segDup==0) && ($esp==0) && ($thG==0) ) { if($tab[$dbSNP_value-1] eq "NA")           { print FILTER "$_\n"; } }
+		if( ($dbSNP == 1) && ($segDup==0) && ($esp==0) && ($thG==0) ) { if($tab[$dbSNP_value-1] eq "NA") { print FILTER "$_\n"; } }
 		# Remove all the variants with a frequency greater than or equal to 0.9  in genomic duplicate segments database
-		if( ($dbSNP==0) && ($segDup == 1) && ($esp==0) && ($thG==0) ) { if($segDupInfo < 0.9)                    { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup == 1) && ($esp==0) && ($thG==0) ) { if($segDupInfo < 0.9)            { print FILTER "$_\n"; } }
 		# Remove all the variants with greater than 0.001 in Exome sequencing project
-		if( ($dbSNP==0) && ($segDup==0) && ($esp == 1) && ($thG==0) )    { if($tab[$espAll_value] <= 0.001)         { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup==0) && ($esp == 1) && ($thG==0) )    { if($espAllInfo <= 0.001)      { print FILTER "$_\n"; } }
 		# Remove all the variants with greater than 0.001 in 1000 genome database
-		if( ($dbSNP==0) && ($segDup==0) && ($esp==0) && ($thG == 1) )    { if($tab[$thousandGenome_value] <= 0.001) { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup==0) && ($esp==0) && ($thG == 1) )    { if($thgInfo <= 0.001)         { print FILTER "$_\n"; } }
 
-		##############################
+
+		#############################
 		#   			Two Filter 				 #
 		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG== 0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) )                    { print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==0) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($tab[$espAll_value] <= 0.001) )         { print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==0) && ($thG==1) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($tab[$thousandGenome_value] <= 0.001) ) { print FILTER "$_\n"; } }
+		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG== 0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) )    { print FILTER "$_\n"; } }
+		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==0) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($espAllInfo <= 0.001) ) { print FILTER "$_\n"; } }
+		if( ($dbSNP==1) && ($segDup==0) && ($esp==0) && ($thG==1) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($thgInfo <= 0.001) )    { print FILTER "$_\n"; } }
 
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==0) )   { if( ($segDupInfo < 0.9) && ($tab[$espAll_value] <= 0.001) )                 { print FILTER "$_\n"; } }
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($tab[$thousandGenome_value] <= 0.001) )         { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==0) )   { if( ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) )           { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($thgInfo <= 0.001) )                { print FILTER "$_\n"; } }
 
-		if( ($dbSNP==0) && ($segDup==0) && ($esp==1) && ($thG==1) )   { if( ($tab[$espAll_value] <= 0.001) && ($tab[$thousandGenome_value] <= 0.001) ) { print FILTER "$_\n"; } }
+		if( ($dbSNP==0) && ($segDup==0) && ($esp==1) && ($thG==1) )   { if( ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )            { print FILTER "$_\n"; } }
 
-		##############################
+
+		#############################
 		#   		Three Filter 				 #
 		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($tab[$espAll_value] <= 0.001) )
+		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) )
 		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($tab[$thousandGenome_value] <= 0.001) )
+		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($thgInfo <= 0.001) )
 		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($tab[$espAll_value] <= 0.001) && ($tab[$thousandGenome_value] <= 0.001) )
+		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
 		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($tab[$espAll_value] <= 0.001) && ($tab[$thousandGenome_value] <= 0.001) )
+		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
 		{ print FILTER "$_\n"; } }
 
-		##############################
+
+		#############################
 		#   		FOUR Filter 				 #
 		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($tab[$espAll_value] <= 0.001) && ($tab[$thousandGenome_value] <= 0.001) )
+		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
 		{ print FILTER "$_\n"; } }
+
 	}
 	close F1; close FILTER;
 }
-# Filter an annotated file using the databases dbSNP and segDup
-sub FilterAV_mouse
+
+
+sub formatSegDupInfo
 {
-	my ($inputFile, $filename, $segDup_name) = @_;
+	my ($segDup_info) = @_;
 
-	my $segDup_value         = recoverNumCol($inputFile, $segDup_name);
-
-	$filename =~ s/\./TOTO/; my @temp = split("TOTO", $filename); $filename =~ s/TOTO/\./;
-
-	open(FILTER, ">", "$output") or die "$!: $output\n";
-	open(F1, $inputFile) or die "$!: $inputFile\n";
-	my $header = <F1>; print FILTER $header;
-
-	while(<F1>)
+	if($segDup_info ne "NA") # Score=0.907883;Name=chr9:36302931
 	{
-		$_      =~ s/[\r\n]+$//;
-		my @tab = split("\t", $_);
-
-		my $segDupInfo = "";
-		if($tab[$segDup_value] ne "NA") # Score=0.907883;Name=chr9:36302931
-		{
-			my @segDup = split(";", $tab[$segDup_value]);
-			$segDup[0] =~ /Score=(.+)/;
-			$segDupInfo = $1;
-		}
-		else { $segDupInfo = $tab[$segDup_value]; }
-
-		# Replace NA by 0 for making test on the same type of variable
-		$segDupInfo =~ s/NA/0/;
-
-		##############################
-		#   			One Filter 				 #
-		##############################
-		# Remove all the variants present in dbSNP
-		if( ($dbSNP == 1) && ($segDup==0) ) { if($tab[$dbSNP_value-1] eq "NA") { print FILTER "$_\n"; } }
-		# Remove all the variants with a frequency greater than or equal to 0.9  in genomic duplicate segments database
-		if( ($dbSNP==0) && ($segDup == 1) ) { if($segDupInfo < 0.9)          { print FILTER "$_\n"; } }
-
-		##############################
-		#   			Two Filter 				 #
-		##############################
-		if( ($dbSNP==1) && ($segDup==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) ) { print FILTER "$_\n"; } }
+		my @segDup = split(";", $segDup_info);
+		$segDup[0] =~ /Score=(.+)/;
+		return $1;
 	}
-	close F1; close FILTER;
+	else { return $segDup_info; }
 }
 
 
@@ -293,10 +271,10 @@ sub recoverNumCol
 	# Only one name is pass
 	else
 	{
-		open(F1,$input) or die "$!: $input\n";
+		open(FT,$input) or die "$!: $input\n";
 	  # For having the name of the columns
-	  my $search_header = <F1>; $search_header =~ s/[\r\n]+$//; my @tab_search_header = split("\t",$search_header);
-	  close F1;
+	  my $search_header = <FT>; $search_header =~ s/[\r\n]+$//; my @tab_search_header = split("\t",$search_header);
+	  close FT;
 	  # The number of the column
 	  my $name_of_column_NB  = "toto";
 	  for(my $i=0; $i<=$#tab_search_header; $i++)
@@ -340,7 +318,7 @@ Function: Filter out variants present in public databases
  					mutspecFilter.pl --dbSNP col_number --segDup --esp --thG --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
 
- Version: 08-2015 (Aug 2015)
+ Version: 03-2016 (March 2016)
 
 
 =head1 OPTIONS
