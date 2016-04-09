@@ -19,7 +19,7 @@
         #else
             0
         #end if
-        
+
         "--refGenome ${refGenome} --pathSeqRefGenome ${refGenome.fields.path} $pooldata $reportSample"
         #import re
         #for $f in $dataset_list
@@ -47,19 +47,19 @@
         <when value="true">
             <param name="estimT" type="text" value="8" label="Maximum number of signatures to compute" help="Warning: Selecting a number above 8 may not work on small datasets"/>
         </when>
-    </conditional> 
+    </conditional>
 
 </inputs>
 
 <outputs>
 	<data name="html" type="data" format="html" label="mutation spectra report on  ${dataset_list.name}" />
-</outputs> 
+</outputs>
 
 <help>
 
 **What it does**
 
-MutSpec-Stat calculates various statistics describing mutation characteristics extracted from a dataset collection, and estimate (optional) the number of signatures present in the dataset. 
+MutSpec-Stat calculates various statistics describing mutation characteristics extracted from a dataset collection, and estimate (optional) the number of signatures present in the dataset.
 The statistics include overall distribution of mutations, mutation distribution for single base substitutions (SBS) by functional regions, chromosomes, or in their trinucleotide sequence context (see details below).
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,8 +115,9 @@ Only regions with strand annotation are considered.
 
 **Table 3. Significance of the strand biases**
 The strand bias for each SBS type is calculated as the ratio of SBS on the non-transcribed (coding) versus the transcribed (non-coding) strand.
-The statistical significance is calculated using a Pearson chi2 test that calculates a p-value corresponding to the probability that the proportion of SBS in the non-
-transcribed strand is equal to 0.5, as expected by chance. As multiple conditions were assessed in parallel, a false discovery rate (FDR) correction was applied using all the samples with enough mutations (count of SBS on the non-transcribed and on the transcribed strand not equal to zero).
+The statistical significance of the differences between the mutational frequencies on the non-transcribed and the
+transcribed strand (equal to 0.5, as expected by chance) is assessed using a chi-squared test followed by the Benjamini-
+Hochberg procedure for multiple testing corrections (only samples with at least 1 mutations on the non-transcribed or on the transcribed strand are considered).
 Two tables are shown to display the 6 SBS types in both orientations.
 
 
@@ -134,7 +135,7 @@ The correlation between SBS counts and chromosome size is calculated using a Pea
 
 
 **Panel 1. Trinucleotide sequence context of SBS on the genomic sequence**
-The trinucleotide sequence context takes into consideration the flanking base in 5' and in 3' of the SBS. 
+The trinucleotide sequence context takes into consideration the flanking base in 5' and in 3' of the SBS.
 SBS counts and frequency data are shown as tables, heatmaps or bar graphs. The heatmap colors are scaled to the maximum value of the corresponding table. The bar graph is scaled to the maximum frequency value (total number of mutation by SBS type is shown in parenthesis).
 
 
