@@ -1540,7 +1540,7 @@ sub ReportMutDist
 			if(($cg_NonTr+$cg_Tr)< 10)
 			{
 				if($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
-				$ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed);
+				else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 			$ws->write(42, 16, $h_chi2{$k_file}{'C>G'}{'FDR'}, $format_A10); $ws->write(42, 17, $h_chi2{$k_file}{'C>G'}{'ConfInt'}, $table_right);
@@ -1600,7 +1600,7 @@ sub ReportMutDist
 			if(($ta_NonTr+$ta_Tr)< 10)
 			{
 				if($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
-				$ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed);
+				else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 			$ws->write(44, 16, $h_chi2{$k_file}{'T>A'}{'FDR'}, $format_A10); $ws->write(44, 17, $h_chi2{$k_file}{'T>A'}{'ConfInt'}, $table_right);
@@ -1630,7 +1630,7 @@ sub ReportMutDist
 			if(($tc_NonTr+$tc_Tr)< 10)
 			{
 				if($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
-				$ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed);
+				else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 			$ws->write(45, 16, $h_chi2{$k_file}{'T>C'}{'FDR'}, $format_A10); $ws->write(45, 17, $h_chi2{$k_file}{'T>C'}{'ConfInt'}, $table_right);
@@ -1660,7 +1660,7 @@ sub ReportMutDist
 			if(($tg_NonTr+$tg_Tr)< 10)
 			{
 				if($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
-				$ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed);
+				else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed); }
 			}
 			else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 			$ws->write(46, 16, $h_chi2{$k_file}{'T>G'}{'FDR'}, $table_bottom); $ws->write(46, 17, $h_chi2{$k_file}{'T>G'}{'ConfInt'}, $table_bottomRight);
