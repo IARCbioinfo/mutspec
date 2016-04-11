@@ -55,6 +55,13 @@
 	<data name="html" type="data" format="html" label="mutation spectra report on  ${dataset_list.name}" />
 </outputs> 
 
+<stdio>
+    <regex match="FutureWarning"
+           source="both"
+           level="warning"
+           description="FutureWarning" />
+</stdio>
+
 <help>
 
 **What it does**
