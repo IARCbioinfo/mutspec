@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 05/02/16             #
+# Last update: 09/04/16             #
 #-----------------------------------#
 
 use strict;
@@ -1040,10 +1040,10 @@ sub ReportMutDist
 		my $wb = ""; my $ws_sum = ""; my %h_chi2 = ();
 		my ($ws_inputNMF_count, $ws_inputNMF_percent) = ("", "");
 		############### Define the format
-		my ($format_A10, $format_A10Boldleft, $format_A10Italic) = ("", "", "");
+		my ($format_A10, $format_A10Boldleft, $format_A10ItalicRed) = ("", "", "");
 		my ($formatT_left, $formatT_right, $formatT_bottomRight, $formatT_bottomLeft, $formatT_bottom, $formatT_bottomHeader, $formatT_bottomRightHeader, $formatT_bottomHeader2, $formatT_rightHeader);
 		my ($formatT_graphTitle);
-		my ($table_topleft, $table_topRight, $table_bottomleft, $table_bottomRight, $table_top, $table_right, $table_bottom, $table_bottomItalic, $table_left, $table_bottomrightHeader, $table_left2, $table_middleHeader, $table_middleHeader2);
+		my ($table_topleft, $table_topRight, $table_bottomleft, $table_bottomRight, $table_top, $table_right, $table_bottom, $table_bottomItalicRed, $table_left, $table_bottomrightHeader, $table_left2, $table_middleHeader, $table_middleHeader2);
 
 		if($oneReportPerSample == 2)
 		{
@@ -1054,8 +1054,8 @@ sub ReportMutDist
 			Format_A10BoldLeft($wb, \$format_A10Boldleft); # Text on the left in Arial 10 bold
 			Format_TextSection($wb, \$formatT_left, \$formatT_right, \$formatT_bottomRight, \$formatT_bottomLeft, \$formatT_bottom, \$formatT_bottomHeader, \$formatT_bottomRightHeader, \$formatT_bottomHeader2, \$formatT_rightHeader);
 			Format_GraphTitle($wb, \$formatT_graphTitle);
-			Format_Table($wb, \$table_topleft, \$table_topRight, \$table_bottomleft, \$table_bottomRight, \$table_top, \$table_right, \$table_bottom, \$table_bottomItalic, \$table_left, \$table_bottomrightHeader, \$table_left2, \$table_middleHeader, \$table_middleHeader2);
-			Format_A10Italic($wb, \$format_A10Italic);
+			Format_Table($wb, \$table_topleft, \$table_topRight, \$table_bottomleft, \$table_bottomRight, \$table_top, \$table_right, \$table_bottom, \$table_bottomItalicRed, \$table_left, \$table_bottomrightHeader, \$table_left2, \$table_middleHeader, \$table_middleHeader2);
+			Format_A10ItalicRed($wb, \$format_A10ItalicRed);
 
 
 			############### Worksheet with a summary of the samples
@@ -1112,8 +1112,8 @@ sub ReportMutDist
 				Format_A10BoldLeft($wb, \$format_A10Boldleft); # Text on the left in Arial 10 bold
 				Format_TextSection($wb, \$formatT_left, \$formatT_right, \$formatT_bottomRight, \$formatT_bottomLeft, \$formatT_bottom, \$formatT_bottomHeader, \$formatT_bottomRightHeader, \$formatT_bottomHeader2, \$formatT_rightHeader);
 				Format_GraphTitle($wb, \$formatT_graphTitle);
-				Format_Table($wb, \$table_topleft, \$table_topRight, \$table_bottomleft, \$table_bottomRight, \$table_top, \$table_right, \$table_bottom, \$table_bottomItalic, \$table_left, \$table_bottomrightHeader, \$table_left2, \$table_middleHeader, \$table_middleHeader2);
-				Format_A10Italic($wb, \$format_A10Italic);
+				Format_Table($wb, \$table_topleft, \$table_topRight, \$table_bottomleft, \$table_bottomRight, \$table_top, \$table_right, \$table_bottom, \$table_bottomItalicRed, \$table_left, \$table_bottomrightHeader, \$table_left2, \$table_middleHeader, \$table_middleHeader2);
+				Format_A10ItalicRed($wb, \$format_A10ItalicRed);
 
 
 		  	############### Worksheet with a summary of the samples
@@ -1497,13 +1497,21 @@ sub ReportMutDist
 			print SB "C>A\tNonTranscribed\t$ca_NonTr\n", "C>A\tTranscribed\t$ca_Tr\n";
 			# C>A
 			$ws->write(30, 11, "C>A", $table_left); $ws->write(30, 12, $ratio_ca, $table_middleHeader); $ws->write(30, 13, $ca_NonTr, $format_A10); $ws->write(30, 14, $ca_Tr, $format_A10);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ca_NonTr+$ca_Tr)< 10) { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10Italic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($ca_NonTr+$ca_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
 			$ws->write(30, 16, $h_chi2{$k_file}{'C>A'}{'FDR'}, $format_A10); $ws->write(30, 17, $h_chi2{$k_file}{'C>A'}{'ConfInt'}, $table_right);
 			# G>T
 			$ws->write(41, 11, "G>T", $table_left); $ws->write(41, 12, $ratio_gt, $table_middleHeader); $ws->write(41, 13, $ca_Tr, $format_A10); $ws->write(41, 14, $ca_NonTr, $format_A10);
-			if(($ca_NonTr+$ca_Tr)< 10) { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10Italic); }
+			if(($ca_NonTr+$ca_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
 			$ws->write(41, 16, $h_chi2{$k_file}{'C>A'}{'FDR'}, $format_A10); $ws->write(41, 17, $h_chi2{$k_file}{'C>A'}{'ConfInt'}, $table_right);
 
@@ -1519,13 +1527,21 @@ sub ReportMutDist
 			print SB "C>G\tNonTranscribed\t$cg_NonTr\n", "C>G\tTranscribed\t$cg_Tr\n";
 			# C>G
 			$ws->write(31, 11, "C>G", $table_left); $ws->write(31, 12, $ratio_cg, $table_middleHeader); $ws->write(31, 13, $cg_NonTr, $format_A10); $ws->write(31, 14, $cg_Tr, $format_A10);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($cg_NonTr+$cg_Tr)< 10) { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10Italic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($cg_NonTr+$cg_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 			$ws->write(31, 16, $h_chi2{$k_file}{'C>G'}{'FDR'}, $format_A10); $ws->write(31, 17, $h_chi2{$k_file}{'C>G'}{'ConfInt'}, $table_right);
 			# G>C
 			$ws->write(42, 11, "G>C", $table_left); $ws->write(42, 12, $ratio_gc, $table_middleHeader); $ws->write(42, 13, $cg_Tr, $format_A10); $ws->write(42, 14, $cg_NonTr, $format_A10);
-			if(($cg_NonTr+$cg_Tr)< 10) { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10Italic); }
+			if(($cg_NonTr+$cg_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 			$ws->write(42, 16, $h_chi2{$k_file}{'C>G'}{'FDR'}, $format_A10); $ws->write(42, 17, $h_chi2{$k_file}{'C>G'}{'ConfInt'}, $table_right);
 
@@ -1541,13 +1557,21 @@ sub ReportMutDist
 			print SB "C>T\tNonTranscribed\t$ct_NonTr\n", "C>T\tTranscribed\t$ct_Tr\n";
 			# C>T
 			$ws->write(32, 11, "C>T", $table_left); $ws->write(32, 12, $ratio_ct, $table_middleHeader); $ws->write(32, 13, $ct_NonTr, $format_A10); $ws->write(32, 14, $ct_Tr, $format_A10);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ct_NonTr+$ct_Tr)< 10) { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10Italic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($ct_NonTr+$ct_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
 			$ws->write(32, 16, $h_chi2{$k_file}{'C>T'}{'FDR'}, $format_A10); $ws->write(32, 17, $h_chi2{$k_file}{'C>T'}{'ConfInt'}, $table_right);
 			# G>A
 			$ws->write(43, 11, "G>A", $table_left); $ws->write(43, 12, $ratio_ga, $table_middleHeader); $ws->write(43, 13, $ct_Tr, $format_A10); $ws->write(43, 14, $ct_NonTr, $format_A10);
-			if(($ct_NonTr+$ct_Tr)< 10) { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10Italic); }
+			if(($ct_NonTr+$ct_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
 			$ws->write(43, 16, $h_chi2{$k_file}{'C>T'}{'FDR'}, $format_A10); $ws->write(43, 17, $h_chi2{$k_file}{'C>T'}{'ConfInt'}, $table_right);
 
@@ -1563,13 +1587,21 @@ sub ReportMutDist
 			print SB "T>A\tNonTranscribed\t$ta_NonTr\n", "T>A\tTranscribed\t$ta_Tr\n";
 			# T>A
 			$ws->write(33, 11, "T>A", $table_left); $ws->write(33, 12, $ratio_ta, $table_middleHeader); $ws->write(33, 13, $ta_NonTr, $format_A10); $ws->write(33, 14, $ta_Tr, $format_A10);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ta_NonTr+$ta_Tr)< 10) { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10Italic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($ta_NonTr+$ta_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 			$ws->write(33, 16, $h_chi2{$k_file}{'T>A'}{'FDR'}, $format_A10); $ws->write(33, 17, $h_chi2{$k_file}{'T>A'}{'ConfInt'}, $table_right);
 			# A>T
 			$ws->write(44, 11, "A>T", $table_left); $ws->write(44, 12, $ratio_at, $table_middleHeader); $ws->write(44, 13, $ta_Tr, $format_A10); $ws->write(44, 14, $ta_NonTr, $format_A10);
-			if(($ta_NonTr+$ta_Tr)< 10) { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10Italic); }
+			if(($ta_NonTr+$ta_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 			$ws->write(44, 16, $h_chi2{$k_file}{'T>A'}{'FDR'}, $format_A10); $ws->write(44, 17, $h_chi2{$k_file}{'T>A'}{'ConfInt'}, $table_right);
 
@@ -1585,13 +1617,21 @@ sub ReportMutDist
 			print SB "T>C\tNonTranscribed\t$tc_NonTr\n", "T>C\tTranscribed\t$tc_Tr\n";
 			# T>C
 			$ws->write(34, 11, "T>C", $table_left); $ws->write(34, 12, $ratio_tc, $table_middleHeader); $ws->write(34, 13, $tc_NonTr, $format_A10); $ws->write(34, 14, $tc_Tr, $format_A10);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($tc_NonTr+$tc_Tr)< 10) { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10Italic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($tc_NonTr+$tc_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 			$ws->write(34, 16, $h_chi2{$k_file}{'T>C'}{'FDR'}, $format_A10); $ws->write(34, 17, $h_chi2{$k_file}{'T>C'}{'ConfInt'}, $table_right);
 			# A>G
 			$ws->write(45, 11, "A>G", $table_left); $ws->write(45, 12, $ratio_ag, $table_middleHeader); $ws->write(45, 13, $tc_Tr, $format_A10); $ws->write(45, 14, $tc_NonTr, $format_A10);
-			if(($tc_NonTr+$tc_Tr)< 10) { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10Italic); }
+			if(($tc_NonTr+$tc_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
+				else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed); }
+			}
 			else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 			$ws->write(45, 16, $h_chi2{$k_file}{'T>C'}{'FDR'}, $format_A10); $ws->write(45, 17, $h_chi2{$k_file}{'T>C'}{'ConfInt'}, $table_right);
 
@@ -1607,20 +1647,32 @@ sub ReportMutDist
 			print SB "T>G\tNonTranscribed\t$tg_NonTr\n", "T>G\tTranscribed\t$tg_Tr\n";
 			# T>G
 			$ws->write(35, 11, "T>G", $table_bottomleft); $ws->write(35, 12, $ratio_tg, $table_middleHeader2); $ws->write(35, 13, $tg_NonTr, $table_bottom); $ws->write(35, 14, $tg_Tr, $table_bottom);
-			# Write in italic (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($tg_NonTr+$tg_Tr)< 10) { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalic); }
+			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
+			if(($tg_NonTr+$tg_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
+				else { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed); }
+			}
 			else { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 			$ws->write(35, 16, $h_chi2{$k_file}{'T>G'}{'FDR'}, $table_bottom); $ws->write(35, 17, $h_chi2{$k_file}{'T>G'}{'ConfInt'}, $table_bottomRight);
 			# A>C
 			$ws->write(46, 11, "A>C", $table_bottomleft); $ws->write(46, 12, $ratio_ac, $table_middleHeader2); $ws->write(46, 13, $tg_Tr, $table_bottom); $ws->write(46, 14, $tg_NonTr, $table_bottom);
-			if(($tg_NonTr+$tg_Tr)< 10) { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalic); }
+			if(($tg_NonTr+$tg_Tr)< 10)
+			{
+				if($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
+				else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed); }
+			}
 			else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 			$ws->write(46, 16, $h_chi2{$k_file}{'T>G'}{'FDR'}, $table_bottom); $ws->write(46, 17, $h_chi2{$k_file}{'T>G'}{'ConfInt'}, $table_bottomRight);
 
 			### Write a warning message when NonTr+Tr < 10
-			my $format_italic  = $wb->add_format(font=>'Arial', size=>10, italic=>1);
-			$ws->write(36, 11, "Warning message: chi-squarred approximation may be incorrect because the number of SBS", $format_italic);
-			$ws->write(37, 11, "on Non-transcribed and transcribed strand is lower than 10", $format_italic);
+			my $format_italic_red = $wb->add_format(font=>'Arial', size=>10, italic=>1, color => 'red');
+
+			if( (($ca_NonTr+$ca_Tr)< 10) || (($cg_NonTr+$cg_Tr)< 10) || (($ct_NonTr+$ct_Tr)< 10) || (($ta_NonTr+$ta_Tr)< 10) || (($tc_NonTr+$tc_Tr)< 10) || (($tg_NonTr+$tg_Tr)< 10) )
+			{
+				$ws->write(36, 11, "Warning message: chi-squared approximation may be incorrect because the number of SBS", $format_italic_red);
+				$ws->write(37, 11, "on Non-transcribed and transcribed strand is lower than 10", $format_italic_red);
+			}
 
 			close SB;
 
@@ -2998,11 +3050,11 @@ sub ReportMutDist
 		my ($wb, $format) = @_;
 		$$format = $wb->add_format(font=>'Arial', size=>11, bold=>1); $$format->set_align('center');
 	}
-	# Define the format of the worksheet: Arial font size=10 italic and center
-	sub Format_A10Italic
+	# Define the format of the worksheet: Arial font size=10 italic red and center
+	sub Format_A10ItalicRed
 	{
 		my ($wb, $format) = @_;
-		$$format = $wb->add_format(font=>'Arial', size=>10, italic=>1); $$format->set_align('center');
+		$$format = $wb->add_format(font=>'Arial', size=>10, italic=>1, color => 'red'); $$format->set_align('center');
 	}
 	# Defile the format of the worksheet: Arialt font size=11 bold and left
 	sub Format_A11BoldLeft
@@ -3151,7 +3203,7 @@ sub ReportMutDist
 	# Define the format of the border of the tables
 	sub Format_Table
 	{
-		my ($wb, $table_topleft, $table_topRight, $table_bottomleft, $table_bottomRight, $table_top, $table_right, $table_bottom, $table_bottomItalic, $table_left, $table_bottomrightHeader, $table_left2, $table_middleHeader, $table_middleHeader2) = @_;
+		my ($wb, $table_topleft, $table_topRight, $table_bottomleft, $table_bottomRight, $table_top, $table_right, $table_bottom, $table_bottomItalicRed, $table_left, $table_bottomrightHeader, $table_left2, $table_middleHeader, $table_middleHeader2) = @_;
 
 		$$table_topleft = $wb->add_format(valign=>'center', bold=>1, font=>'Arial', size=>10); $$table_topleft->set_top(1); $$table_topleft->set_left(1);
 		$$table_topRight = $wb->add_format(valign=>'center', bold=>1, font=>'Arial', size=>10); $$table_topRight->set_top(1); $$table_topRight->set_right(1);
@@ -3161,7 +3213,7 @@ sub ReportMutDist
 		$$table_top          = $wb->add_format(valign=>'center', bold=>1, font=>'Arial', size=>10);   $$table_top->set_top(1);
 		$$table_right        = $wb->add_format(valign=>'center', font=>'Arial', size=>10);            $$table_right->set_right(1);
 		$$table_bottom       = $wb->add_format(valign=>'center', font=>'Arial', size=>10);            $$table_bottom->set_bottom(1);
-		$$table_bottomItalic = $wb->add_format(valign=>'center', font=>'Arial', size=>10, italic=>1); $$table_bottomItalic->set_bottom(1);
+		$$table_bottomItalicRed = $wb->add_format(valign=>'center', font=>'Arial', size=>10, italic=>1, color => 'red'); $$table_bottomItalicRed->set_bottom(1);
 		$$table_left         = $wb->add_format(valign=>'center', bold=>1, font=>'Arial', size=>10);   $$table_left->set_left(1);
 
 		my $bgColor_totallighGray = $wb->set_custom_color(54, 230, 230, 230);
@@ -3246,7 +3298,7 @@ Function: automatically run a pipeline and calculate various statistics on mutat
 
  Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample input
 
- Version: 02-2016 (Feb 2016)
+ Version: 04-2016 (April 2016)
 
 
 =head1 OPTIONS
