@@ -40,19 +40,20 @@ Restart galaxy instance for changes in .loc file to take effect or reload it int
 ### Installation
 
 	# MutSpec-Stat and MutSpec-NMF
+By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and file mutspecNmf_wrapper.sh to change this number to the maximum number of CPU available on your server.
+
 MutSpec-Stat and MutSpec-NMF tools allow parallel computations that are time consuming.
 It is recommended to use the highest number of cores available on the Galaxy server to reduce the computation time of these tools.
 
-By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and file mutspecNmf_wrapper.sh to change this number to the maximum number of CPU available on your server.
+
 
 
 	# MutSpec-Annot
+The maximum CPU value needs to be specified when installing MutSpec package by editing the file mutspecAnnot.pl to reflect the maximum number of CPU available on your server.
+
 This tool may be time consuming for large files. For example, annotating a file of more than 25,000 variants takes 1 hour using 1 CPU,
 while annotating this file using 8 CPUs takes only 5 minutes. We have optimized MutSpec-Annot so that the tool uses more CPUs, if available, as follows:
 -files with less than 5,000 lines: 1 CPU is used
 -files with more than 5,000 and less than 25,000 lines: 2 CPU are used
 -files with more than 25,000 and less than 100,000 lines: 8 (or maximum CPU, if less than 8 CPU are available) are used (our benchmark results didn't show any time saving using more than 8 cores for files with more than 25,000 but less than 100,000 lines)
 -files with more than 100,000: maximum CPU are used 
-
-The maximum CPU value needs to be specified when installing MutSpec package by editing the file mutspecAnnot.pl to reflect the maximum number of CPU available on your server.
- 
