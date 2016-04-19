@@ -437,6 +437,20 @@ sub FullAnnotation
 				if($fullAVDB eq "yes") { AnnotateAV("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
 				else { annotateAV_min("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
 
+				# Check if the annotations worked
+				open(F1, "$folderMutAnalysis/log_annovar.txt") or die "$!: $folderMutAnalysis/log_annovar.txt\n";
+				while(<F1>)
+				{
+					if($_ =~ /ERROR/i)
+					{
+						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
+						print STDERR $_;
+						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
+						exit;
+					}
+				}
+				close F1;
+
 				# Recover the strand orientation
 				my $length_AVheader = 0;
 				RecoverStrand("$folder_temp/$tempFileName_AVOutput", $headerOriginalFile, $path_AVDB, $refGenome, "$folder_temp/$outFilenameTemp-Strand", \$length_AVheader);
@@ -509,6 +523,20 @@ sub FullAnnotation
 			my $tempFileName_AVOutput = $outFilenameTemp.".".${refGenome}."_multianno.txt";
 			if($fullAVDB eq "yes") { AnnotateAV("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
 			else { annotateAV_min("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
+
+			# Check if the annotations worked
+				open(F1, "$folderMutAnalysis/log_annovar.txt") or die "$!: $folderMutAnalysis/log_annovar.txt\n";
+				while(<F1>)
+				{
+					if($_ =~ /ERROR/i)
+					{
+						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
+						print STDERR $_;
+						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
+						exit;
+					}
+				}
+				close F1;
 
 			# Recover the strand orientation
 			my $length_AVheader = 0;
@@ -1057,8 +1085,6 @@ sub CombinedTempFile
 	my ($folderTempFile, $output) = @_;
 
 	my $cmd_cat_mt_results = "cat ";
-
-	if(!-e $folderTempFile) { print STDERR "$!: $folderTempFile\n"; }
 
 	foreach my $file (`ls $folderTempFile/*.txt`)
 	{
