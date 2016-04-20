@@ -9,6 +9,7 @@ Version 1.0
 Released under GNU public license version 2 (GPL v2)
 
 Package description: Ardin et al. - 2016 - MutSpec: a Galaxy toolbox for streamlined analyses of somatic mutation spectra in human and mouse cancer genomes - BMC Bioinformatics
+http://www.ncbi.nlm.nih.gov/pubmed/?term=27091472
 
 Test data: https://usegalaxy.org/u/maude-ardin/p/mutspectestdata
 
