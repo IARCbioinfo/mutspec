@@ -106,4 +106,16 @@ Matrix of known signatures
 
 </help>
 
+
+<citations>
+    <citation type="bibtex">
+        @ARTICLE{ardin_mutspec:_2016,
+            author = {Ardin et al},
+            keywords = {Galaxy, Mutation signatures, Mutation spectra, Single base substitutions},
+            title = {{MutSpec}: a Galaxy toolbox for streamlined analyses of somatic mutation spectra in human and mouse cancer genomes},
+            url = {http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1011-z}
+        }
+    </citation>
+</citations>
+
 </tool>
