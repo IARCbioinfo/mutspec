@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 17/02/16             #
+# Last update: 26/04/16             #
 #-----------------------------------#
 
 use strict;
@@ -665,7 +665,7 @@ sub AnnotateAV
 			my @tab = split("\t", $_);
 
 			# db name like refGenome_dbName.txt
-			if( ($tab[0] =~ /\w+_(\w+)\.txt/) && ($tab[0] !~ /sites/) && ($tab[0] !~ /esp/) && ($tab[0] !~ /sift/) && ($tab[0] !~ /pp2/) )
+			if( ($tab[0] =~ /\w+_(\w+)\.txt/) && ($tab[0] !~ /sites/) && ($tab[0] !~ /esp/) && ($tab[0] !~ /ljb26/) )
 			{
 				$$refS_protocol .= $1.","; $$refS_operation .= $tab[1].",";
 			}
@@ -683,7 +683,7 @@ sub AnnotateAV
 				$$refS_protocol .=$AVdbName_final.","; $$refS_operation .= $tab[1].",";
 			}
 			# ESP
-			if( ($tab[0] =~ /esp/) || ($tab[0] =~ /sift/) || ($tab[0] =~ /pp2/) )
+			if( ($tab[0] =~ /esp/) || ($tab[0] =~ /ljb26/) )
 			{
 				$tab[0] =~ /\w+_(\w+)_(\w+)\.txt/;
 				my $AVdbName_final = $1."_".$2;
