@@ -29,11 +29,11 @@ hg19_esp6500siv2_ea.txt	f
 hg19_ljb26_sift.txt	f
 hg19_ljb26_pp2hdiv.txt	f
 hg19_ljb26_pp2hvar.txt	f
+hg19_ljb26_mt.txt	f
 hg19_cosmic70.txt	f
 hg19_exac03.txt	f
 hg19_exac03nontcga.txt	f
 hg19_exac03nonpsych.txt	f
 hg19_kaviar20150923.txt	f
 hg19_hrcr1.txt	f
-hg19_ljb26_mt.txt	f
 hg19_dbscsnv11.txt	f
