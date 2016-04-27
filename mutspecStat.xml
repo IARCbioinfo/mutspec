@@ -14,7 +14,7 @@
         mutspecStat_wrapper.sh
         $html
         ${GALAXY_DATA_INDEX_DIR}/shared/ucsc/chrom/
-        #if $estimateSignature.estimSign == True:
+        #if str($estimateSignature.estimSign) == "true" or $estimateSignature.estimSign == True:
               ${estimateSignature.estimT}
         #else
             0
@@ -43,7 +43,7 @@
 	<param name="reportSample" type="boolean" checked="false" truevalue="--reportSample" falsevalue="" label="Generate one output file for each sample" help="By default, one output Excel file will be generated with statistics of each sample shown in different data sheets. Setting this option to true will generate one Excel file for each sample instead. It is recommended to use this option if your dataset list contains more than 250 files as the Excel output file may be too heavy to open easily on a computer with limited RAM"/>
 
     <conditional name="estimateSignature">
-        <param name="estimSign" type="boolean" label="Compute statistics for estimating the number of signatures" help="This option gererates different statistics that can be used to estimate the number of signatures to extract with NMF (this number should be used in the MutSpec-NMF tool"/>
+        <param name="estimSign" type="boolean" checked="false" truevalue="true" label="Compute statistics for estimating the number of signatures" help="This option gererates different statistics that can be used to estimate the number of signatures to extract with NMF (this number should be used in the MutSpec-NMF tool"/>
         <when value="true">
             <param name="estimT" type="text" value="8" label="Maximum number of signatures to compute" help="Warning: Selecting a number above 8 may not work on small datasets"/>
         </when>
