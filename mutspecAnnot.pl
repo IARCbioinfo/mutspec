@@ -1146,7 +1146,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 02-2016 (Feb 2016)
+ Version: 04-2016 (Apr 2016)
 
 
 =head1 OPTIONS
