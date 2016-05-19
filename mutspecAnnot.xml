@@ -44,7 +44,7 @@
 
 **What it does**
 
-MutSpect-Annot provides functional annotations from `ANNOVAR software`__ (June 2015 version is provided here), as well as the strand transcript orientation (from refGene database) and sequence context of variants (extrated from the reference genome selected).
+MutSpect-Annot provides functional annotations from `ANNOVAR software`__ (Feb 2016 version is provided here), as well as the strand transcript orientation (from refGene database) and sequence context of variants (extrated from the reference genome selected).
 
 .. __: http://www.openbioinformatics.org/annovar/
 
