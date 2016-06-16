@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 09/04/16             #
+# Last update: 16/06/16             #
 #-----------------------------------#
 
 use strict;
@@ -2400,13 +2400,7 @@ sub ReportMutDist
 								# Rount the p-value
 								for(i in 1:nrow(strBias))
 								{
-									 if( (! is.na(pValChi2[i])) && (pValChi2[i] < 0.0001) )
-									 {
-									   pValChi2_round[i] <- format(pValChi2[i], scientific=T, digits=3)
-									 } else if(! is.na(pValChi2[i]))
-									 {
-									   pValChi2_round[i] <- as.character(round(pValChi2[i], 3))
-									 }
+									pValChi2_round[i] <- format(pValChi2[i], scientific=T, digits=3)
 								}
 
 								# The option for the pool is specified
@@ -2415,13 +2409,7 @@ sub ReportMutDist
 									# Round the p-value for Pool_Data
 									for(i in 1:6)
 									{
-									  if( (! is.na(pValChi2_PoolData[i])) && (pValChi2_PoolData[i] < 0.0001) )
-									  {
-									    pValChi2_PoolData_Round[i] <- format(pValChi2_PoolData[i], scientific=T, digits=3)
-									  } else if(! is.na(pValChi2_PoolData[i]))
-									  {
-									    pValChi2_PoolData_Round[i] <- as.character(round(pValChi2_PoolData[i], 3))
-									  }
+										pValChi2_PoolData_Round[i] <- format(pValChi2_PoolData[i], scientific=T, digits=3)
 									}
 								}
 
