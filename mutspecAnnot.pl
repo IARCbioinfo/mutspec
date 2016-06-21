@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 26/04/16             #
+# Last update: 21/06/16             #
 #-----------------------------------#
 
 use strict;
@@ -178,41 +178,71 @@ sub RecoverInputFormat
 	### VCF files
 	if($inputFormat eq "vcf")
 	{
-		open(F1, $file) or die "$!: $file\n";
-		open(OUT, ">", "$folder_temp/$filename.txt") or die "$!: $folder_temp/$filename.txt\n";
-		while (<F1>)
+		### MuTect2 output VCFs
+		my $testVC = `grep MuTect2 $file`;
+		if($testVC =~ /MuTect2/)
 		{
-			$_      =~ s/[\r\n]+$//;
-			my @tab = split("\t", $_);
-			# Print the VCF header
-			if($tab[0] eq "#CHROM")
-			{
-				$tab[0] =~ /#(.+)/;
-				print OUT "$1";
-				for(my $i=1; $i<=$#tab; $i++) { print OUT "\t$tab[$i]"; }
-				print OUT "\n";
-			}
-			elsif($tab[0] !~ /##/)
-			{
-				# Don't consider chromosome random, GL and MT
-				if( ($tab[0] =~ /random/) || ($tab[0] =~ /GL/i) ) { next; }
-				print OUT "$_\n";
-			}
+			# Keep only the variants passing MuTect2 filters
+			`grep PASS $file > $folder_temp/$filename-PASS.txt`;
+
+			# Recover the header
+			$$refS_headerOriginalFile = `grep '#CHROM' $file`;
+
+			# Add the header
+			# Sed command doesn't work... sed 's/^/some text\n/' file > res
+			open(OUT, ">", "$folder_temp/$filename-KEEP.txt") or die "$!: $folder_temp/$filename-KEEP.txt\n";
+			print OUT $$refS_headerOriginalFile;
+			open(F1, "$folder_temp/$filename-PASS.txt") or die "$!: $folder_temp/$filename-PASS.txt\n";
+			while(<F1>) { print OUT $_; }
+			close F1; close OUT;
+
+			`rm $folder_temp/$filename-PASS.txt`;
+
+			# Check if there if no empty column
+			CheckEmptyColumn("$folder_temp/$filename-KEEP.txt");
+			`rm $folder_temp/$filename-KEEP.txt`;
+
+			# Set the col number for the chr,start,ref and alt
+			($chrValue, $positionValue, $refValue, $altValue) = (0, 1, 3, 4);
 		}
-		close F1; close OUT;
+		else
+		{
+			open(F1, $file) or die "$!: $file\n";
+			open(OUT, ">", "$folder_temp/$filename.txt") or die "$!: $folder_temp/$filename.txt\n";
+			while (<F1>)
+			{
+				$_      =~ s/[\r\n]+$//;
+				my @tab = split("\t", $_);
+				# Print the VCF header
+				if($tab[0] eq "#CHROM")
+				{
+					$tab[0] =~ /#(.+)/;
+					print OUT "$1";
+					for(my $i=1; $i<=$#tab; $i++) { print OUT "\t$tab[$i]"; }
+					print OUT "\n";
+				}
+				elsif($tab[0] !~ /##/)
+				{
+					# Don't consider chromosome random, GL and MT
+					if( ($tab[0] =~ /random/) || ($tab[0] =~ /GL/i) ) { next; }
+					print OUT "$_\n";
+				}
+			}
+			close F1; close OUT;
 
-		## Recover the header
-		open(F1, "$folder_temp/$filename.txt") or die "$!: $folder_temp/$filename.txt\n";
-		$$refS_headerOriginalFile = <F1>;
-		close F1;
+			## Recover the header
+			open(F1, "$folder_temp/$filename.txt") or die "$!: $folder_temp/$filename.txt\n";
+			$$refS_headerOriginalFile = <F1>;
+			close F1;
 
-		# Check if there if no empty column
-		CheckEmptyColumn("$folder_temp/$filename.txt");
-		`rm $folder_temp/$filename.txt`;
+			# Check if there if no empty column
+			CheckEmptyColumn("$folder_temp/$filename.txt");
+			`rm $folder_temp/$filename.txt`;
 
 
-		# Set the col number for the chr,start,ref and alt
-		($chrValue, $positionValue, $refValue, $altValue) = (0, 1, 3, 4);
+			# Set the col number for the chr,start,ref and alt
+			($chrValue, $positionValue, $refValue, $altValue) = (0, 1, 3, 4);
+		}
 	}
 	### MuTect files
 	elsif($inputFormat eq "mutect")
@@ -1146,7 +1176,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 04-2016 (Apr 2016)
+ Version: 06-2016 (June 2016)
 
 
 =head1 OPTIONS
