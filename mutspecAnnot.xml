@@ -72,6 +72,8 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 **mutect** :     contig position ref_allele alt_allele
 
+**vcf** :        CHROM POS REF ALT
+
 **cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
 
 **icgc** :       chromosome chromosome_start reference_genome_allele mutated_to_allele
