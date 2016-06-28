@@ -52,7 +52,7 @@ MutSpect-Annot provides functional annotations from `ANNOVAR software`__ (Feb 20
 
 **Input formats**
 
-MutSpect-Annot accepts files in VCF (version 4.1) or in tab-delimited (TAB) format.
+MutSpect-Annot accepts files in VCF (version 4.1 and 4.2) or in tab-delimited (TAB) format.
 
 .. class:: infomark
 
@@ -64,15 +64,13 @@ Filenames must be &#60;= 31 characters.
 
 .. class:: warningmark
 
-These files should contain at least four columns describing for each variant, the chromosome number, the start genomic position, the reference allele and the alternate allele
+These files should contain at least four columns describing for each variant, the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order.
 
 .. class:: warningmark 
 
 The tool supports different column names (**names are case-sensitive**) depending on the source file as follows:
 
 **mutect** :     contig position ref_allele alt_allele
-
-**vcf** :        CHROM POS REF ALT
 
 **cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
 
@@ -92,7 +90,7 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 .. class:: infomark
 
-For MuTect output files, only confident calls are considered (variants containing the string REJECT in the judgement column are not annotated and excluded from the MutSpect-Annot output) as other calls are very likely to be dubious calls or artefacts.
+For MuTect and MuTect2 output files, only confident calls are considered (variants containing the string REJECT in the judgement column or not passing MuTect2 filters, are not annotated and excluded from the MutSpect-Annot output) as other calls are very likely to be dubious calls or artefacts.
 
 .. class:: infomark
 
@@ -100,7 +98,7 @@ For COSMIC and ICGC files, variants are reported on several transcripts. These d
 
 .. class:: warningmark
 
-If multiple input files are specified they should be from the **same genome build**
+If multiple input files are specified they should be from the **same genome build** and in the **same format**.
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
