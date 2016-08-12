@@ -14,7 +14,7 @@
         mutspecStat_wrapper.sh
         $html
         ${GALAXY_DATA_INDEX_DIR}/shared/ucsc/chrom/
-        #if str($estimateSignature.estimSign) == "true" or $estimateSignature.estimSign == True:
+        #if str($estimateSignature.estimSign) == "true":
               ${estimateSignature.estimT}
         #else
             0
