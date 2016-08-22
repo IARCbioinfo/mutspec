@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 16/06/16             #
+# Last update: 22/08/16             #
 #-----------------------------------#
 
 use strict;
@@ -45,6 +45,10 @@ our $pathRScriptMutSpectrum = "$path_R_Scripts/R/mutationSpectra_Galaxy.r";
 our $folderMutAnalysis = "";
 our @pathInput         = split("/", $input);
 
+# Folder with the list of samples with at least 1 variant
+our $folderCheckedForStat  = "$pwd/folder_checked";
+if(!-e $folderCheckedForStat) { mkdir($folderCheckedForStat) or die "Can't create the directory $folderCheckedForStat\n"; }
+
 # Hash table with the length of each chromosomes
 our %chromosomes;
 
@@ -53,6 +57,9 @@ our %chromosomes;
 ######################################################################################################################################################
 # Check the presence of the flags and create the output and temp directories
 CheckFlags();
+
+# Check the file(s) and remove those with zero variants
+checkVariants();
 
 # Retrieve chromosomes length
 checkChrDir();
@@ -63,14 +70,15 @@ print "-----------------Report Mutational Analysis----------------------\n";
 print"-----------------------------------------------------------------\n";
 
 # First check if the file is annotated or not
-CheckAnnotationFile($input);
+CheckAnnotationFile($folderCheckedForStat);
 
 # Calculate the statistics and generate the report
 my @colInfoAV = qw(Chr Start Ref Alt);
-ReportMutDist($input, $folderMutAnalysis, $folder_temp, \@colInfoAV, $refGenome);
+ReportMutDist($folderCheckedForStat, $folderMutAnalysis, $folder_temp, \@colInfoAV, $refGenome);
 
 # Remove the temporary directory
 rmtree($folder_temp);
+rmtree($folderCheckedForStat);
 
 
 ######################################################################################################################################################
@@ -122,6 +130,33 @@ sub CheckLengthFilename
 	my ($filename, $directories, $suffix) = fileparse($inputFile, qr/\.[^.]*/);
 
 	if(length($filename) > 31) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit; }
+}
+
+# Remove file(s) with zero variants
+sub checkVariants
+{
+	if(-d $input)
+	{
+		foreach my $file (`ls $input`)
+		{
+			chomp($file);
+			my ($filename, $directories, $suffix) = fileparse($file, qr/\.[^.]*/);
+
+			my $nbVariants = `wc -l $input/$file`;
+			$nbVariants =~ /(\d+).+/;
+			my $nbLine  = $1;
+
+			if($nbLine > 1)
+			{
+				`cp $input/$file $folderCheckedForStat`;
+			}
+			else
+			{
+				print STDOUT "\nThere is no variant to compute statistics for $filename\n";
+				print STDOUT "Check MutSpecAnnot and/or MutSpecFilter tool(s) standard output for more informations\n";
+			}
+		}
+	}
 }
 
 # Retrieve chromosomes length
@@ -3286,7 +3321,7 @@ Function: automatically run a pipeline and calculate various statistics on mutat
 
  Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample input
 
- Version: 04-2016 (April 2016)
+ Version: 08-2016 (August 2016)
 
 
 =head1 OPTIONS
