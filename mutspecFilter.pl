@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecFilter.pl          #
-# Last update: 18/03/16             #
+# Last update: 22/08/16             #
 #-----------------------------------#
 
 use strict;
@@ -76,6 +76,28 @@ filterAgainstPublicDB();
 
 
 print STDOUT "\tFilter selected\tdbSNP = ".$dbSNP."\tsegDup = ".$segDup."\tesp = ".$esp."\tthG = ".$thG."\n";
+
+
+### Write a message if the input file contains zero variants or if all the variants are filtered out
+my ($filename, $directories, $suffix) = fileparse($input, qr/\.[^.]*/);
+my $nbVariantsIn = `wc -l $input`;
+$nbVariantsIn =~ /(\d+).+/;
+my $nbLineIn  = $1;
+if($nbLineIn == 1)
+{
+	print STDOUT "\nThere is no variant to be filtered for $filename\n";
+}
+
+
+my ($filenameOut, $directoriesOut, $suffixOut) = fileparse($output, qr/\.[^.]*/);
+my $nbVariantsOut = `wc -l $output`;
+$nbVariantsOut =~ /(\d+).+/;
+my $nbLineOut  = $1;
+if($nbLineOut == 1)
+{
+	print STDOUT "\nAll the variants were filtered for $filenameOut\n";
+}
+
 
 
 sub filterAgainstPublicDB
@@ -318,7 +340,7 @@ Function: Filter out variants present in public databases
  					mutspecFilter.pl --dbSNP col_number --segDup --esp --thG --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
 
- Version: 03-2016 (March 2016)
+ Version: 08-2016 (August 2016)
 
 
 =head1 OPTIONS
