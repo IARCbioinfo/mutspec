@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 21/06/16             #
+# Last update: 22/08/16             #
 #-----------------------------------#
 
 use strict;
@@ -1289,7 +1289,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 06-2016 (June 2016)
+ Version: 08-2016 (August 2016)
 
 
 =head1 OPTIONS
