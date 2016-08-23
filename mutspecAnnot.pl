@@ -391,10 +391,6 @@ sub RecoverColNameAuto
 # Annotate the file with Annovar, add the strand orientation and the sequence context
 sub FullAnnotation
 {
-	# Create a list of the samples not passing MuTect or MuTect2 filters
-	my @failedSamples = ();
-
-
 	print "-----------------------------------------------------------------\n";
 	print "---------------------------Annotation----------------------------\n";
 	print "-----------------------------------------------------------------\n";
@@ -506,8 +502,7 @@ sub FullAnnotation
 			## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy when using "collection".
 			if($nbLine == 1)
 			{
-				## Create a list with the samples having zero variants passing MuTect or MuTect2 filters
-				push(@failedSamples, $filenameOK);
+				print STDOUT "\nThe sample $filenameOK didn't pass MuTect filters\n";
 
 				### Print Annovar minimal header + the original header of the input file
 				my $outputFile = "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt";
@@ -642,8 +637,7 @@ sub FullAnnotation
 		## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy for the next tool when using "Collection".
 		if($nbLine == 1)
 		{
-			## Create a list with the samples having zero variants passing MuTect or MuTect2 filters
-			push(@failedSamples, $filenameO);
+			print STDOUT "\nThe sample $filenameO didn't pass MuTect filters\n";
 
 			### Print Annovar minimal header + the original header of the input file
 			my $outputFile = "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt";
@@ -689,15 +683,6 @@ sub FullAnnotation
 	}
 	# Remove the temporary directory
 	rmtree($folder_temp);
-
-
-	### Write the list of samples not passing MuTect or MuTect2 filters
-	print "\n\tList of samples not passing MuTect filters:\n";
-
-	foreach (@failedSamples)
-	{
-		print $_."\n";
-	}
 }
 
 sub Convert2AV

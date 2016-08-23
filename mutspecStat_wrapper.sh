@@ -119,9 +119,9 @@ if [[ $estimSign > 0 ]]; then
     touch $outEstimateSign
     echo "<a href='Mutational_Analysis/EstimatingSignatures.html'>Estimating the number of signatures</a><br/>" >> $html
     echo "<br/> <center> <h2>Computed statistics for estimating the number of signatures</h2> </center> <br/>" >> $outEstimateSign
-    echo "Several approaches have been proposed to choose the optimal number of signatures to extract with NMF. <br/> 
+    echo "Several approaches have been proposed to choose the optimal number of signatures to extract with NMF. <br/>
           Brunet et al. 2004, proposed to take the first number of signature for which the cophenetic coefficient starts decreasing, <br/>
-          Hutchins et al. 2008, suggested to choose the first value where the RSS curve presents an inflection point. <br/> 
+          Hutchins et al. 2008, suggested to choose the first value where the RSS curve presents an inflection point. <br/>
           Frigyesi et al. 2008, considered the smallest value at which the decrease in the RSS is lower than the decrease of the RSS obtained from random data. <br/><br/>
           The estimation are based on Brunet’s algorithm computed from 50 runs for each value of signature to estimate. <br/> <br/>
           The original data are shuffled for comparing the quality measures obtained with our data (Data x) and from randomized data (Data y). The curves for the actual data are in solid line, those for the randomized data are in dashed line. <br/> <br/>" >> $outEstimateSign
@@ -135,10 +135,20 @@ fi
 
 ## HMTL Link to the samples
 echo "<br/> Link to individual samples <br/>" >> $html
-for file in $names
+
+
+## Consider only samples with at least one mutation
+for file in `ls $output_dir/Mutational_Analysis/Figures/Impact_protein_sequence`
 do
+
   name=$(echo ${file}| cut -d"=" -f2)
   name=${name%.*}
+
+  ## Pool Data is handle separately
+  if [ $name = "Pool_Data" ]; then
+  	break
+  fi
+
   outfile="$output_dir/Mutational_Analysis/$name.html"
   touch $outfile # Create an empty file named $outfile
   echo "<a href='Mutational_Analysis/$name.html'>$name</a><br/>" >> $html

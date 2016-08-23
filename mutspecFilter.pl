@@ -86,16 +86,18 @@ my $nbLineIn  = $1;
 if($nbLineIn == 1)
 {
 	print STDOUT "\nThere is no variant to be filtered for $filename\n";
+	print STDOUT "Check MutSpecAnnot tool standard output for more informations\n";
 }
-
-
-my ($filenameOut, $directoriesOut, $suffixOut) = fileparse($output, qr/\.[^.]*/);
-my $nbVariantsOut = `wc -l $output`;
-$nbVariantsOut =~ /(\d+).+/;
-my $nbLineOut  = $1;
-if($nbLineOut == 1)
+else
 {
-	print STDOUT "\nAll the variants were filtered for $filenameOut\n";
+	my ($filenameOut, $directoriesOut, $suffixOut) = fileparse($output, qr/\.[^.]*/);
+	my $nbVariantsOut = `wc -l $output`;
+	$nbVariantsOut =~ /(\d+).+/;
+	my $nbLineOut  = $1;
+	if($nbLineOut == 1)
+	{
+		print STDOUT "\nAll the variants were filtered for $filenameOut\n";
+	}
 }
 
 
