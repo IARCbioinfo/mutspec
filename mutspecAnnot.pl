@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 21/06/16             #
+# Last update: 22/08/16             #
 #-----------------------------------#
 
 use strict;
@@ -422,10 +422,11 @@ sub FullAnnotation
 			my $cpu = 0;
 			my $nbVariants = `wc -l $file`;
 			$nbVariants =~ /(\d+).+/;
+			my $nbLine  = $1;
 
-			if($1-1 <= 5000)      { $cpu = 1; }
-			elsif( ($1-1 > 5000) && ($1-1 < 25000) ) { $cpu = 2; }
-			elsif( ($1-1 >= 25000) && ($1-1 < 100000) ) { $cpu = 8; }
+			if($nbLine-1 <= 5000)      { $cpu = 1; }
+			elsif( ($nbLine-1 > 5000) && ($nbLine-1 < 25000) )    { $cpu = 2; }
+			elsif( ($nbLine-1 >= 25000) && ($nbLine-1 < 100000) ) { $cpu = 8; }
 			else { $cpu = $max_cpu; }
 
 			# If the number predefined can't be used on the machine use the maximum number specify by the administrator
@@ -493,8 +494,57 @@ sub FullAnnotation
 			# Wait all the child process
 			$pm->wait_all_children;
 
-			# Paste the file together
-			CombinedTempFile("$folder_temp/$filenameOK", "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt");
+
+
+			#################################################
+			###					Paste the file together 		 		  ###
+			#################################################
+			## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy when using "collection".
+			if($nbLine == 1)
+			{
+				print STDOUT "\nThe sample $filenameOK didn't pass MuTect filters\n";
+
+				### Print Annovar minimal header + the original header of the input file
+				my $outputFile = "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt";
+				open(OUT, ">", $outputFile) or die "$!: $outputFile\n";
+
+				if($fullAVDB eq "no")
+				{
+					print OUT "Chr\tStart\tEnd\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tStrand\tcontext";
+					print OUT "\t".$headerOriginalFile;
+				}
+				### Print complete Annovar header (using the database name present in the file listAVDB) + the original header of the input file
+				else
+				{
+					print OUT "Chr\tStart\tEnd\tRef\tAlt";
+					open(F1, $listAVDB) or die "$!: $listAVDB\n";
+					while(<F1>)
+					{
+						if($_ =~ /^#/) { next; }
+
+						my @tab = split("\t", $_);
+						$tab[0] =~ /$refGenome\_(.+)\.txt/;
+						my $dbName = $1;
+
+						if($dbName =~ /refGene|knownGene|ensGene/)
+						{
+							print OUT "\t"."Func.$dbName\tGene.$dbName\tGeneDetail.$dbName\tExonicFunc.$dbName\tAAChange.$dbName";
+						}
+						else
+						{
+							print OUT "\t".$dbName;
+						}
+					}
+					print OUT "\tStrand\tcontext\t".$headerOriginalFile;
+
+					close F1;
+				}
+				close OUT;
+			}
+			else
+			{
+				CombinedTempFile("$folder_temp/$filenameOK", "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt");
+			}
 		}
 	}
 	# The input file is one file
@@ -509,10 +559,11 @@ sub FullAnnotation
 		my $cpu = 0;
 		my $nbVariants = `wc -l $folder_temp/$filenameO-ColumnCorrect.txt`;
 		$nbVariants =~ /(\d+).+/;
+		my $nbLine  = $1;
 
-		if($1-1 <= 5000)      { $cpu = 1; }
-		elsif( ($1-1 > 5000) && ($1-1 < 25000) ) { $cpu = 2; }
-		elsif( ($1-1 >= 25000) && ($1-1 < 100000) ) { $cpu = 8; }
+		if($nbLine-1 <= 5000)      { $cpu = 1; }
+		elsif( ($nbLine-1 > 5000) && ($nbLine-1 < 25000) )    { $cpu = 2; }
+		elsif( ($nbLine-1 >= 25000) && ($nbLine-1 < 100000) ) { $cpu = 8; }
 		else { $cpu = $max_cpu; }
 
 		# If the number predefined can't be used on the machine use the maximum number specify by the administrator
@@ -580,8 +631,55 @@ sub FullAnnotation
 		# Wait all the child process
 		$pm->wait_all_children;
 
-		# Paste the file together
-		CombinedTempFile("$folder_temp/$filenameO", "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt");
+		#################################################
+		###					Paste the file together 		 		  ###
+		#################################################
+		## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy for the next tool when using "Collection".
+		if($nbLine == 1)
+		{
+			print STDOUT "\nThe sample $filenameO didn't pass MuTect filters\n";
+
+			### Print Annovar minimal header + the original header of the input file
+			my $outputFile = "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt";
+			open(OUT, ">", $outputFile) or die "$!: $outputFile\n";
+
+			if($fullAVDB eq "no")
+			{
+				print OUT "Chr\tStart\tEnd\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tStrand\tcontext";
+				print OUT "\t".$headerOriginalFile;
+			}
+			### Print complete Annovar header (using the database name present in the file listAVDB) + the original header of the input file
+			else
+			{
+				print OUT "Chr\tStart\tEnd\tRef\tAlt";
+				open(F1, $listAVDB) or die "$!: $listAVDB\n";
+				while(<F1>)
+				{
+					if($_ =~ /^#/) { next; }
+
+					my @tab = split("\t", $_);
+					$tab[0] =~ /$refGenome\_(.+)\.txt/;
+					my $dbName = $1;
+
+					if($dbName =~ /refGene|knownGene|ensGene/)
+					{
+						print OUT "\t"."Func.$dbName\tGene.$dbName\tGeneDetail.$dbName\tExonicFunc.$dbName\tAAChange.$dbName";
+					}
+					else
+					{
+						print OUT "\t".$dbName;
+					}
+				}
+				print OUT "\tStrand\tcontext\t".$headerOriginalFile;
+
+				close F1;
+			}
+			close OUT;
+		}
+		else
+		{
+			CombinedTempFile("$folder_temp/$filenameO", "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt");
+		}
 	}
 	# Remove the temporary directory
 	rmtree($folder_temp);
@@ -1176,7 +1274,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 06-2016 (June 2016)
+ Version: 08-2016 (August 2016)
 
 
 =head1 OPTIONS

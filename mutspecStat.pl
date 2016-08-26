@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 16/06/16             #
+# Last update: 22/08/16             #
 #-----------------------------------#
 
 use strict;
@@ -45,6 +45,10 @@ our $pathRScriptMutSpectrum = "$path_R_Scripts/R/mutationSpectra_Galaxy.r";
 our $folderMutAnalysis = "";
 our @pathInput         = split("/", $input);
 
+# Folder with the list of samples with at least 1 variant
+our $folderCheckedForStat  = "$pwd/folder_checked";
+if(!-e $folderCheckedForStat) { mkdir($folderCheckedForStat) or die "Can't create the directory $folderCheckedForStat\n"; }
+
 # Hash table with the length of each chromosomes
 our %chromosomes;
 
@@ -53,6 +57,9 @@ our %chromosomes;
 ######################################################################################################################################################
 # Check the presence of the flags and create the output and temp directories
 CheckFlags();
+
+# Check the file(s) and remove those with zero variants
+checkVariants();
 
 # Retrieve chromosomes length
 checkChrDir();
@@ -63,14 +70,15 @@ print "-----------------Report Mutational Analysis----------------------\n";
 print"-----------------------------------------------------------------\n";
 
 # First check if the file is annotated or not
-CheckAnnotationFile($input);
+CheckAnnotationFile($folderCheckedForStat);
 
 # Calculate the statistics and generate the report
 my @colInfoAV = qw(Chr Start Ref Alt);
-ReportMutDist($input, $folderMutAnalysis, $folder_temp, \@colInfoAV, $refGenome);
+ReportMutDist($folderCheckedForStat, $folderMutAnalysis, $folder_temp, \@colInfoAV, $refGenome);
 
 # Remove the temporary directory
 rmtree($folder_temp);
+rmtree($folderCheckedForStat);
 
 
 ######################################################################################################################################################
@@ -122,6 +130,33 @@ sub CheckLengthFilename
 	my ($filename, $directories, $suffix) = fileparse($inputFile, qr/\.[^.]*/);
 
 	if(length($filename) > 31) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit; }
+}
+
+# Remove file(s) with zero variants
+sub checkVariants
+{
+	if(-d $input)
+	{
+		foreach my $file (`ls $input`)
+		{
+			chomp($file);
+			my ($filename, $directories, $suffix) = fileparse($file, qr/\.[^.]*/);
+
+			my $nbVariants = `wc -l $input/$file`;
+			$nbVariants =~ /(\d+).+/;
+			my $nbLine  = $1;
+
+			if($nbLine > 1)
+			{
+				`cp $input/$file $folderCheckedForStat`;
+			}
+			else
+			{
+				print STDOUT "\n\nThere is no variant to compute statistics for $filename\n";
+				print STDOUT "Check MutSpecAnnot and/or MutSpecFilter tool(s) standard output for more informations\n\n";
+			}
+		}
+	}
 }
 
 # Retrieve chromosomes length
@@ -1498,18 +1533,20 @@ sub ReportMutDist
 			# C>A
 			$ws->write(30, 11, "C>A", $table_left); $ws->write(30, 12, $ratio_ca, $table_middleHeader); $ws->write(30, 13, $ca_NonTr, $format_A10); $ws->write(30, 14, $ca_Tr, $format_A10);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ca_NonTr+$ca_Tr)< 10)
+			if(($ca_NonTr+$ca_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>A'}{'p-value'})   { $ws->write_string(30, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(30, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
 			$ws->write(30, 16, $h_chi2{$k_file}{'C>A'}{'FDR'}, $format_A10); $ws->write(30, 17, $h_chi2{$k_file}{'C>A'}{'ConfInt'}, $table_right);
 			# G>T
 			$ws->write(41, 11, "G>T", $table_left); $ws->write(41, 12, $ratio_gt, $table_middleHeader); $ws->write(41, 13, $ca_Tr, $format_A10); $ws->write(41, 14, $ca_NonTr, $format_A10);
-			if(($ca_NonTr+$ca_Tr)< 10)
+			if(($ca_NonTr+$ca_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>A'}{'p-value'})   { $ws->write_string(41, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>A'}{'p-value'} eq "NA") { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(41, 15, $h_chi2{$k_file}{'C>A'}{'p-value'}, $format_A10); }
@@ -1528,18 +1565,20 @@ sub ReportMutDist
 			# C>G
 			$ws->write(31, 11, "C>G", $table_left); $ws->write(31, 12, $ratio_cg, $table_middleHeader); $ws->write(31, 13, $cg_NonTr, $format_A10); $ws->write(31, 14, $cg_Tr, $format_A10);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($cg_NonTr+$cg_Tr)< 10)
+			if(($cg_NonTr+$cg_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>G'}{'p-value'})   { $ws->write_string(31, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(31, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 			$ws->write(31, 16, $h_chi2{$k_file}{'C>G'}{'FDR'}, $format_A10); $ws->write(31, 17, $h_chi2{$k_file}{'C>G'}{'ConfInt'}, $table_right);
 			# G>C
 			$ws->write(42, 11, "G>C", $table_left); $ws->write(42, 12, $ratio_gc, $table_middleHeader); $ws->write(42, 13, $cg_Tr, $format_A10); $ws->write(42, 14, $cg_NonTr, $format_A10);
-			if(($cg_NonTr+$cg_Tr)< 10)
+			if(($cg_NonTr+$cg_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>G'}{'p-value'})   { $ws->write_string(42, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>G'}{'p-value'} eq "NA") { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(42, 15, $h_chi2{$k_file}{'C>G'}{'p-value'}, $format_A10); }
@@ -1558,18 +1597,20 @@ sub ReportMutDist
 			# C>T
 			$ws->write(32, 11, "C>T", $table_left); $ws->write(32, 12, $ratio_ct, $table_middleHeader); $ws->write(32, 13, $ct_NonTr, $format_A10); $ws->write(32, 14, $ct_Tr, $format_A10);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ct_NonTr+$ct_Tr)< 10)
+			if(($ct_NonTr+$ct_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>T'}{'p-value'})   { $ws->write_string(32, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(32, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
 			$ws->write(32, 16, $h_chi2{$k_file}{'C>T'}{'FDR'}, $format_A10); $ws->write(32, 17, $h_chi2{$k_file}{'C>T'}{'ConfInt'}, $table_right);
 			# G>A
 			$ws->write(43, 11, "G>A", $table_left); $ws->write(43, 12, $ratio_ga, $table_middleHeader); $ws->write(43, 13, $ct_Tr, $format_A10); $ws->write(43, 14, $ct_NonTr, $format_A10);
-			if(($ct_NonTr+$ct_Tr)< 10)
+			if(($ct_NonTr+$ct_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'C>T'}{'p-value'})   { $ws->write_string(43, 15, ""); }
+				elsif($h_chi2{$k_file}{'C>T'}{'p-value'} eq "NA") { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(43, 15, $h_chi2{$k_file}{'C>T'}{'p-value'}, $format_A10); }
@@ -1588,18 +1629,20 @@ sub ReportMutDist
 			# T>A
 			$ws->write(33, 11, "T>A", $table_left); $ws->write(33, 12, $ratio_ta, $table_middleHeader); $ws->write(33, 13, $ta_NonTr, $format_A10); $ws->write(33, 14, $ta_Tr, $format_A10);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($ta_NonTr+$ta_Tr)< 10)
+			if(($ta_NonTr+$ta_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'T>A'}{'p-value'})   { $ws->write_string(33, 15, ""); }
+				elsif($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(33, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 			$ws->write(33, 16, $h_chi2{$k_file}{'T>A'}{'FDR'}, $format_A10); $ws->write(33, 17, $h_chi2{$k_file}{'T>A'}{'ConfInt'}, $table_right);
 			# A>T
 			$ws->write(44, 11, "A>T", $table_left); $ws->write(44, 12, $ratio_at, $table_middleHeader); $ws->write(44, 13, $ta_Tr, $format_A10); $ws->write(44, 14, $ta_NonTr, $format_A10);
-			if(($ta_NonTr+$ta_Tr)< 10)
+			if(($ta_NonTr+$ta_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'T>A'}{'p-value'})   { $ws->write_string(44, 15, ""); }
+				elsif($h_chi2{$k_file}{'T>A'}{'p-value'} eq "NA") { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(44, 15, $h_chi2{$k_file}{'T>A'}{'p-value'}, $format_A10); }
@@ -1618,18 +1661,20 @@ sub ReportMutDist
 			# T>C
 			$ws->write(34, 11, "T>C", $table_left); $ws->write(34, 12, $ratio_tc, $table_middleHeader); $ws->write(34, 13, $tc_NonTr, $format_A10); $ws->write(34, 14, $tc_Tr, $format_A10);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($tc_NonTr+$tc_Tr)< 10)
+			if(($tc_NonTr+$tc_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'T>C'}{'p-value'})   { $ws->write_string(34, 15, ""); }
+				elsif($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(34, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 			$ws->write(34, 16, $h_chi2{$k_file}{'T>C'}{'FDR'}, $format_A10); $ws->write(34, 17, $h_chi2{$k_file}{'T>C'}{'ConfInt'}, $table_right);
 			# A>G
 			$ws->write(45, 11, "A>G", $table_left); $ws->write(45, 12, $ratio_ag, $table_middleHeader); $ws->write(45, 13, $tc_Tr, $format_A10); $ws->write(45, 14, $tc_NonTr, $format_A10);
-			if(($tc_NonTr+$tc_Tr)< 10)
+			if(($tc_NonTr+$tc_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
+				if(! exists $h_chi2{$k_file}{'T>C'}{'p-value'})   { $ws->write_string(45, 15, ""); }
+				elsif($h_chi2{$k_file}{'T>C'}{'p-value'} eq "NA") { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
 				else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10ItalicRed); }
 			}
 			else { $ws->write_string(45, 15, $h_chi2{$k_file}{'T>C'}{'p-value'}, $format_A10); }
@@ -1648,18 +1693,20 @@ sub ReportMutDist
 			# T>G
 			$ws->write(35, 11, "T>G", $table_bottomleft); $ws->write(35, 12, $ratio_tg, $table_middleHeader2); $ws->write(35, 13, $tg_NonTr, $table_bottom); $ws->write(35, 14, $tg_Tr, $table_bottom);
 			# Write in italic and red (= warning message) when the count of NonTr + Tr is lower than 10
-			if(($tg_NonTr+$tg_Tr)< 10)
+			if(($tg_NonTr+$tg_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
+				if(! exists $h_chi2{$k_file}{'T>G'}{'p-value'})   { $ws->write_string(35, 15, "", $table_bottom); }
+				elsif($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 				else { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed); }
 			}
 			else { $ws->write_string(35, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 			$ws->write(35, 16, $h_chi2{$k_file}{'T>G'}{'FDR'}, $table_bottom); $ws->write(35, 17, $h_chi2{$k_file}{'T>G'}{'ConfInt'}, $table_bottomRight);
 			# A>C
 			$ws->write(46, 11, "A>C", $table_bottomleft); $ws->write(46, 12, $ratio_ac, $table_middleHeader2); $ws->write(46, 13, $tg_Tr, $table_bottom); $ws->write(46, 14, $tg_NonTr, $table_bottom);
-			if(($tg_NonTr+$tg_Tr)< 10)
+			if(($tg_NonTr+$tg_Tr) < 10)
 			{
-				if($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
+				if(! exists $h_chi2{$k_file}{'T>G'}{'p-value'})   { $ws->write_string(46, 15, "", $table_bottom); }
+				elsif($h_chi2{$k_file}{'T>G'}{'p-value'} eq "NA") { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
 				else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottomItalicRed); }
 			}
 			else { $ws->write_string(46, 15, $h_chi2{$k_file}{'T>G'}{'p-value'}, $table_bottom); }
@@ -2386,12 +2433,13 @@ sub ReportMutDist
 								    {
 								    	# Not enough effective for the test
 											pValChi2[k]       <- NA
-											confInt[k]        <- NA
-											proportion[k]     <- NA
-											sampleSize[k]     <- NA
 											pValChi2_round[k] <- NA
 											k <- k+1
 								    }
+
+								    confInt[i]        <- NA
+										proportion[i]     <- NA
+										sampleSize[i]     <- NA
 									}
 								}
 								# Adjust with FDR
@@ -3286,7 +3334,7 @@ Function: automatically run a pipeline and calculate various statistics on mutat
 
  Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample input
 
- Version: 04-2016 (April 2016)
+ Version: 08-2016 (August 2016)
 
 
 =head1 OPTIONS
