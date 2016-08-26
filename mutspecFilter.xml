@@ -12,7 +12,7 @@
         $segDup
         $esp
         $thG
-        #if str($FilterdbSNP.dbSNP) == "true" or $FilterdbSNP.dbSNP == True:
+        #if str($FilterdbSNP.dbSNP) == "true":
            --dbSNP ${FilterdbSNP.column}
         #else
            --dbSNP 0
