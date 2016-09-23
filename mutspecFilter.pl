@@ -22,8 +22,9 @@ our ($dbSNP_value, $segDup, $esp, $thG) = (0, 0, 0, 0); # For filtering agains t
 our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
 our ($listAVDB)                         = "empty";      # Text file with the list Annovar databases.
 our ($dir)                              = "";
+our (@filters);
 
-GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB) or pod2usage(2);
+GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
 
 our ($input) = @ARGV;
 
@@ -99,6 +100,10 @@ else
 		print STDOUT "\nAll the variants were filtered for $filenameOut\n";
 	}
 }
+
+### filter versus additional VCF files if provided.
+if ( $#filters > 0){ filterAdditionalVCF(); }
+
 
 
 
@@ -309,6 +314,57 @@ sub recoverNumCol
 	  else                        { return $name_of_column_NB; }
 	}
 }
+
+
+sub filterAdditionalVCF{
+
+	#create bed
+	open(TABLE, "$output") or die "$!: $output\n";
+	open(F1, ">bed") or die "cannot create bed file";
+	my $NL=1;
+	my $headers=<TABLE>;
+	while(<TABLE>)
+	{
+        $NL++;
+        my @line=split("\t", $_);
+        print F1 "$line[0]\t$line[1]\t$line[2]\t$NL\n";
+	}
+	close F1;
+	close TABLE;
+	#and sort it
+	`sort -k1,1 -k2,2n bed > sorted`;
+	
+	foreach my $filter (@filters){
+		
+		#find intersect
+		`sort -k1,1 -k2,2n $filter > ref`;
+		`bedtools intersect -a sorted -b ref -v -sorted > bed`;
+		`sort -k1,1 -k2,2n bed > sorted`;
+	}
+	
+	#generate new output
+	`sort -k4n sorted > bed`;
+	`cp $output table`;
+	
+	open(F1, "bed") or die "error no sorted file";
+	open(F2, "table") or die "error no table file";
+	open(OUT, ">$output") or die "error cannot open output file";
+	print OUT $headers;
+	$NL=1;
+	my $line = <F2>;
+	while(<F1>)
+	{
+        my @NR=split("\t", $_);
+        while( $NL < $NR[3]){ $line = <F2>; $NL++; }
+        print OUT $line;
+	}
+	close F1;
+	close F2;
+	close OUT;
+		
+}
+
+
 
 =head1 NAME
 

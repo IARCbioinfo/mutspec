@@ -13,7 +13,7 @@
           </repository> 
 
           <repository name="package_r_3_1_2" owner="iuc">
-            <package name="R" version="3.0.1" />
+            <package name="R" version="3.1.2" />
           </repository>
 
           <!-- allow downloading and installing an Perl package from cpan.org-->

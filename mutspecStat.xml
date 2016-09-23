@@ -5,7 +5,7 @@
     <requirement type="set_environment">SCRIPT_PATH</requirement>
     <requirement type="package" version="5.18.1">perl</requirement>
     <requirement type="package" version="3.3">weblogo</requirement>
-    <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="package" version="1.9">numpy</requirement>
     <requirement type="package" version="3.1.2">R</requirement>
     <requirement type="package" version="0.1">mutspec</requirement>
 </requirements>
