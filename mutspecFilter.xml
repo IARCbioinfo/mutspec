@@ -12,6 +12,7 @@
         $segDup
         $esp
         $thG
+        $exac
         #if str($FilterdbSNP.dbSNP) == "true":
            --dbSNP ${FilterdbSNP.column}
         #else
@@ -46,9 +47,10 @@
     <param name="segDup" type="boolean" checked="true" truevalue="--segDup" falsevalue="" label="Filter against SegDup database" help="Remove variants present at &#62;= 0.9 frequency in the genomic duplicate segments database" />
     <param name="esp" type="boolean" checked="true" truevalue="--esp" falsevalue="" label="Filter against the ESP database" help="Remove variants present at frequency &#62; 0.001 in the Exome Sequencing Project database (only valid for human genomes)" />
     <param name="thG" type="boolean" checked="true" truevalue="--thG" falsevalue="" label="Filter against the 1000g database project" help="Remove variants present at frequency &#62; 0.001 in the 1000 genome database (only valid for human genomes)" />
+    <param name="exac" type="boolean" checked="true" truevalue="--exac" falsevalue="" label="Filter against the ExAC database" help="Remove variants present at frequency &#62; 0.001 in the EXome Agregate Consortium database" />
     
     <repeat name="filters" title="Additional filters">
-    	<param name="reference" type="data" format="vcf|bed" label="vcf or bed file reference"/>
+    	<param name="reference" type="data" format="bed" label="bed file reference" help="filter regions"/>
     </repeat>
     
 </inputs>

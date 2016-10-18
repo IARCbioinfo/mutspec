@@ -18,13 +18,13 @@ use File::Path;
 ################################################################################################################################################################################
 
 our ($verbose, $man, $help)             = (0, 0, 0);    # Parse options and print usage if there is a syntax error, or if usage was explicitly requested.
-our ($dbSNP_value, $segDup, $esp, $thG) = (0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome.
+our ($dbSNP_value, $segDup, $esp, $thG, $exac) = (0, 0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome, Exac.
 our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
 our ($listAVDB)                         = "empty";      # Text file with the list Annovar databases.
 our ($dir)                              = "";
 our (@filters);
 
-GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
+GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'exac'=>\$exac, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
 
 our ($input) = @ARGV;
 
@@ -44,19 +44,19 @@ if($dbSNP_value > 0) { $dbSNP = 1; }
 if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
 
 # Zero databases is specified
-if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) )
+if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0) )
 {
-	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome) or 1000 genome (only for human genome)\n";
+	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome), EXac or 1000 genome (only for human genome)\n";
 	exit;
 }
 
 
 
 ############ Recover the name of the databases to filter against ############
-my ($segDup_name, $espAll_name, $thousandGenome_name) = ("", "", "");
+my ($segDup_name, $espAll_name, $thousandGenome_name, $exac_name) = ("", "", "", "");
 my @tab_protocol = ();
 
-if( ($segDup == 1) || ($esp == 1) || ($thG == 1) )
+if( ($segDup == 1) || ($esp == 1) || ($thG == 1)  || ($exac == 1))
 {
 	### Recover the name of the column
 	my $protocol = "";
@@ -68,6 +68,7 @@ if( ($segDup == 1) || ($esp == 1) || ($thG == 1) )
 		if($tab_protocol[$i] =~ /genomicSuperDups/) { $segDup_name = $tab_protocol[$i]; }
 		elsif($tab_protocol[$i] =~ /1000g/)         { $thousandGenome_name = $tab_protocol[$i]; }
 		elsif($tab_protocol[$i] =~ /esp/)           { $espAll_name = $tab_protocol[$i]; }
+		elsif($tab_protocol[$i] =~ /exac/i)          { $exac_name = $tab_protocol[$i]; }
 	}
 }
 
@@ -76,7 +77,7 @@ if( ($segDup == 1) || ($esp == 1) || ($thG == 1) )
 filterAgainstPublicDB();
 
 
-print STDOUT "\tFilter selected\tdbSNP = ".$dbSNP."\tsegDup = ".$segDup."\tesp = ".$esp."\tthG = ".$thG."\n";
+print STDOUT "\tFilter selected\tdbSNP = ".$dbSNP."\tsegDup = ".$segDup."\tesp = ".$esp."\tthG = ".$thG."\tEXac = ". $exac . "\n";
 
 
 ### Write a message if the input file contains zero variants or if all the variants are filtered out
@@ -102,7 +103,7 @@ else
 }
 
 ### filter versus additional VCF files if provided.
-if ( $#filters > 0){ filterAdditionalVCF(); }
+if ( $#filters > 0){ filterAdditionalBED(); }
 
 
 
@@ -118,7 +119,7 @@ sub filterAgainstPublicDB
 		$_      =~ s/[\r\n]+$//;
 		my @tab = split("\t", $_);
 
-		my ($segDupInfo, $espAllInfo, $thgInfo) = (0, 0 ,0);
+		my ($segDupInfo, $espAllInfo, $thgInfo, $exacInfo) = (0, 0 ,0, 0);
 
 		if($segDup == 1)
 		{
@@ -141,52 +142,22 @@ sub filterAgainstPublicDB
 			$thgInfo = $tab[$thousandGenome_value];
 			$thgInfo =~ s/NA/0/;
 		}
+		if($exac == 1)
+		{
+			my $exac_value = recoverNumCol($input, $exac_name);
+			# Replace NA by 0 for making test on the same type of variable
+			$exacInfo = $tab[$exac_value];
+			$exacInfo =~ s/NA/0/;
+		}
 
-
-		##############################
-		#   			One Filter 				 #
-		##############################
-		# Remove all the variants present in dbSNP
-		if( ($dbSNP == 1) && ($segDup==0) && ($esp==0) && ($thG==0) ) { if($tab[$dbSNP_value-1] eq "NA") { print FILTER "$_\n"; } }
-		# Remove all the variants with a frequency greater than or equal to 0.9  in genomic duplicate segments database
-		if( ($dbSNP==0) && ($segDup == 1) && ($esp==0) && ($thG==0) ) { if($segDupInfo < 0.9)            { print FILTER "$_\n"; } }
-		# Remove all the variants with greater than 0.001 in Exome sequencing project
-		if( ($dbSNP==0) && ($segDup==0) && ($esp == 1) && ($thG==0) )    { if($espAllInfo <= 0.001)      { print FILTER "$_\n"; } }
-		# Remove all the variants with greater than 0.001 in 1000 genome database
-		if( ($dbSNP==0) && ($segDup==0) && ($esp==0) && ($thG == 1) )    { if($thgInfo <= 0.001)         { print FILTER "$_\n"; } }
-
-
-		#############################
-		#   			Two Filter 				 #
-		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG== 0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) )    { print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==0) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($espAllInfo <= 0.001) ) { print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==0) && ($thG==1) )  { if( ($tab[$dbSNP_value-1] eq "NA") && ($thgInfo <= 0.001) )    { print FILTER "$_\n"; } }
-
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==0) )   { if( ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) )           { print FILTER "$_\n"; } }
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($thgInfo <= 0.001) )                { print FILTER "$_\n"; } }
-
-		if( ($dbSNP==0) && ($segDup==0) && ($esp==1) && ($thG==1) )   { if( ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )            { print FILTER "$_\n"; } }
-
-
-		#############################
-		#   		Three Filter 				 #
-		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==0) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) )
-		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==0) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($thgInfo <= 0.001) )
-		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==1) && ($segDup==0) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
-		{ print FILTER "$_\n"; } }
-		if( ($dbSNP==0) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
-		{ print FILTER "$_\n"; } }
-
-
-		#############################
-		#   		FOUR Filter 				 #
-		##############################
-		if( ($dbSNP==1) && ($segDup==1) && ($esp==1) && ($thG==1) ) { if( ($tab[$dbSNP_value-1] eq "NA") && ($segDupInfo < 0.9) && ($espAllInfo <= 0.001) && ($thgInfo <= 0.001) )
-		{ print FILTER "$_\n"; } }
+		my $filter = 0;
+		if( $dbSNP  == 1 && $tab[$dbSNP_value-1] ne "NA" ){ $filter = 1; }
+		if( $segDup == 1 && $segDupInfo >= 0.9)  		  { $filter = 1; }
+		if( $esp    == 1 && $espAllInfo > 0.001)  		  { $filter = 1; }
+		if( $thG 	== 1 && $thgInfo > 0.001)  		  	  { $filter = 1; }
+		if( $thG 	== 1 && $exacInfo > 0.001)  		  { $filter = 1; }
+		
+		if (!$filter) { print FILTER "$_\n"; }
 
 	}
 	close F1; close FILTER;
@@ -220,7 +191,7 @@ sub ExtractAVDBName
 		my @tab = split("\t", $_);
 
 		# db name like refGenome_dbName.txt
-		if( ($tab[0] =~ /\w+_(\w+)\.txt/) && ($tab[0] !~ /sites/) && ($tab[0] !~ /esp/) && ($tab[0] !~ /sift/) && ($tab[0] !~ /pp2/) )
+		if( ($tab[0] =~ /\w+_(\w+)\.txt/) && ($tab[0] !~ /sites/) && ($tab[0] !~ /esp/) && ($tab[0] !~ /sift/) && ($tab[0] !~ /pp2/) && ($tab[0] !~ /exac/i) )
 		{
 			my $temp = $1;
 			if($temp =~ /genomicSuperDups/) { $$refS_protocol .= $temp.","; }
@@ -247,6 +218,15 @@ sub ExtractAVDBName
 
 			if($2 eq "all") { $$refS_protocol .=$AVdbName_final.","; }
 		}
+		# EXAC
+		if($tab[0] =~ /exac/i)
+		{
+			$tab[0] =~ /\w+_(\w+)_(\w+)\.txt/;
+			my $AVdbName_final = "ExAC_ALL";
+
+			$$refS_protocol .= $AVdbName_final.",";
+		}
+		
 	}
 	close F1;
 
@@ -316,7 +296,7 @@ sub recoverNumCol
 }
 
 
-sub filterAdditionalVCF{
+sub filterAdditionalBED{
 
 	#create bed
 	open(TABLE, "$output") or die "$!: $output\n";

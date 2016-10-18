@@ -23,6 +23,7 @@
           <package>http://search.cpan.org/CPAN/authors/id/J/JM/JMCNAMARA/OLE-Storage_Lite-0.19.tar.gz</package>
           <package>http://search.cpan.org/CPAN/authors/id/J/JM/JMCNAMARA/Spreadsheet-WriteExcel-2.40.tar.gz</package>
           <package>http://search.cpan.org/CPAN/authors/id/D/DL/DLUX/Parallel-ForkManager-0.7.5.tar.gz</package>
+          <package>http://search.cpan.org/CPAN/authors/id/G/GR/GROMMEL/Math-Round-0.06.tar.gz</package>
         </action>
       <action type="set_environment">
         <environment_variable action="prepend_to" name="PERL5LIB">$INSTALL_DIR/lib/perl5</environment_variable>
