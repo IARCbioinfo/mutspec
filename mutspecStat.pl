@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 22/08/16             #
+# Last update: 18/10/16             #
 #-----------------------------------#
 
 use strict;
@@ -12,7 +12,6 @@ use Getopt::Long;
 use Pod::Usage;
 use File::Basename; # my ($filename, $directories, $suffix) = fileparse($file, qr/\.[^.]*/);
 use File::Path;
-use Statistics::R;
 use Spreadsheet::WriteExcel;
 
 our ($verbose, $man, $help) = (0, 0, 0); # Parse options and print usage if there is a syntax error, or if usage was explicitly requested.
@@ -39,6 +38,8 @@ our $pwd = `pwd`;
 chomp($pwd);
 
 # Path to R scripts
+our $pathRscriptChi2test    = "$path_R_Scripts/R/chi2test_MutSpecStat_Galaxy.r";
+our $pathRScriptFigs        = "$path_R_Scripts/R/figs_MutSpecStat_Galaxy.r";
 our $pathRScriptTxnSB       = "$path_R_Scripts/R/transciptionalStrandBias.r";
 our $pathRScriptMutSpectrum = "$path_R_Scripts/R/mutationSpectra_Galaxy.r";
 
@@ -2226,7 +2227,15 @@ sub ReportMutDist
   		###########################################################################################################################################################
   		################################################################### GRAPHS & TABLES	#######################################################################
   		###########################################################################################################################################################
-  		Create_Graph($folderFigure, $k_file, $maxValue);
+  		# Create_Graph($folderFigure, $k_file, $maxValue);
+
+  		`Rscript $pathRScriptFigs --folderFigure $folderFigure --folderTemp $folder_temp --filename $k_file 2>&1`;
+
+  		## Plot the transcriptional strand bias in mutation signature
+		 `Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$k_file/$k_file-StrandedSignatureCount.txt $folderFigure/Stranded_Analysis/$k_file/$k_file-StrandedSignatureCount $folder_temp/$k_file-StrandedSignatureCount Count 2>&1`;
+		 `Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$k_file/$k_file-StrandedSignaturePercent.txt $folderFigure/Stranded_Analysis/$k_file/$k_file-StrandedSignaturePercent $folder_temp/$k_file-StrandedSignaturePercent Percent 2>&1`;
+
+
 
   		## Distribution of SBS into the Excel report (Figure 1 + Table 1)
 			$ws->write(0, 0, "Graph 1. SBS distribution", $formatT_graphTitle); $ws->set_row(0, 18);
@@ -2376,130 +2385,7 @@ sub ReportMutDist
 		close CHI2;
 
 
-		# Open the connection with R
-		my $R = Statistics::R->new() or die "Impossible to create a communication bridge with R\n";
-
-		$R->send(qq`## Load the data. There is one column with the mutation type and the sample name but it's just for knowing what is corresponding to each line. The two columns with the number of variant per strand would be sufficient.
-					      strBias<-read.delim("$folderChi2/Input_chi2_strandBias.txt", dec=".");`);
-		$R->send(q`# Chi2
-		         		pValChi2       <- c() # First I create an empty vector and then I apply a for on the data load
-								pValChi2_round <- c() # Empty vector with the rounded p-values
-								confInt        <- c() # Empty vector for the confident interval
-								proportion     <- c() # Empty vector for the proportion of NonTr compared to the (NonTr+Tr)
-								sampleSize     <- c() # Empty vector for the count of samples in NonTr and Tr
-								# For Pool_Data save the p-values in a different vector for not having them for the FDR
-								pValChi2_PoolData       <- c()
-								pValChi2_PoolData_Round <- c()
-
-								j = 1 # Timer for pValChi2_PoolData vector
-								k = 1 # Timer for pValChi2
-
-								for(i in 1:nrow(strBias))
-								{
-									if(! sum(strBias[i,2:3]) == 0)
-									{
-										# For Pool_Data
-								    if(strBias[i,1] == "Pool_Data")
-								    {
-								      pValChi2_PoolData[j] <- prop.test(x=strBias[i,2],n=sum(strBias[i,2:3]),p=0.5)$p.value
-								      j <- j+1
-								    }
-								    # For the other sample(s)
-								    else
-								    {
-								      # Calculate the p-value
-								      pValChi2[k] <- prop.test(x=strBias[i,2],n=sum(strBias[i,2:3]),p=0.5)$p.value
-								      k <- k+1
-								    }
-
-										# Calculate the confidence interval
-									   temp       <- prop.test(x=strBias[i,2],n=sum(strBias[i,2:3]),p=0.5)$conf.int
-									   confInt[i] <- paste0("[", round(temp[1],2), "-", round(temp[2],2), "]") # Same as paste(sep="")
-
-										# Save the proportion
-										proportion[i] <- strBias[i,2] / sum(strBias[i,2:3])
-
-										# Save the sample size (count on NonTr and Tr)
-										sampleSize[i]  <- paste(strBias[i,2], strBias[i,3], sep="-")
-									} else
-									{
-										if(strBias[i,1] == "Pool_Data")
-								    {
-								      pValChi2_PoolData[j]       <- NA
-								      pValChi2_PoolData_Round[j] <- NA
-								      j <- j+1
-								    }
-								    else
-								    {
-								    	# Not enough effective for the test
-											pValChi2[k]       <- NA
-											pValChi2_round[k] <- NA
-											k <- k+1
-								    }
-
-								    confInt[i]        <- NA
-										proportion[i]     <- NA
-										sampleSize[i]     <- NA
-									}
-								}
-								# Adjust with FDR
-								FDR<-p.adjust(pValChi2, method="BH")
-
-								# Rount the p-value
-								for(i in 1:nrow(strBias))
-								{
-									pValChi2_round[i] <- format(pValChi2[i], scientific=T, digits=3)
-								}
-
-								# The option for the pool is specified
-								if(!is.null(pValChi2_PoolData))
-								{
-									# Round the p-value for Pool_Data
-									for(i in 1:6)
-									{
-										pValChi2_PoolData_Round[i] <- format(pValChi2_PoolData[i], scientific=T, digits=3)
-									}
-								}
-
-
-								# I create a dataframe for add what I want
-								outputChi2 <- data.frame(round(strBias[,2]/strBias[,3], digits=2), sampleSize, round(proportion, 3), confInt)
-								outputChi2$Mut.type   <- strBias$Alteration
-								outputChi2$SampleName <- strBias$SampleName
-								colnames(outputChi2)[1:6]<-c("Strand_Bias", "NonTr-Tr", "Proportion", "Confidence Interval", "Mutation_Type", "SampleName")
-
-								# Transform the data frame into a matrix for adding the p-value for the samples and Pool_Data
-								matrix         <- as.matrix(outputChi2)
-								tempColPValFDR <- matrix(, nrow=length(sampleSize), ncol = 2) # Create an empty matrix with 2 columns for adding the p-value and the FDR
-								matrix         <- cbind(matrix, tempColPValFDR)
-								j = 1 # Timer for all the sample
-								k = 1 # Timer for Pool_Data
-								for(i in 1:nrow(matrix))
-								{
-								  if(matrix[i,6] == "Pool_Data")
-								  {
-								    matrix[i,7] <- pValChi2_PoolData_Round[k]
-								    matrix[i,8] <- "NA" # No FDR for Pool_Data
-								    k = k+1
-								  }
-								  else
-								  {
-								    matrix[i,7] <- pValChi2_round[j]
-								    matrix[i,8] <- round(FDR[j], 3)
-								    j = j+1
-								  }
-								}
-								# Reorder the columns
-								matrix <- cbind(matrix[,1:3], matrix[,7], matrix[,8], matrix[,4:6])
-								colnames(matrix)[4] <- "P-val-Chi2"
-								colnames(matrix)[5] <- "FDR"`);
-
-		$R->send(qq`# Export the file
-								# dec=".": Set the separator for the decimal by "."
-								write.table(matrix,file="$folderChi2/Output_chi2_strandBias.txt",quote = FALSE,sep="\t",row.names = FALSE,dec=".");`);
-
-		# Stop the connection with R
-		$R->stop();
+		`Rscript $pathRscriptChi2test --folderChi2 $folderChi2 2>&1`;
 	}
 	# Pearson correlation
 	sub PearsonCoefficient
@@ -2617,151 +2503,6 @@ sub ReportMutDist
 		if($_[0] eq "C") { return "G"; }
 		if($_[0] eq "G") { return "C"; }
 		if($_[0] eq "T") { return "A"; }
-	}
-	# Create and write some graphics
-	sub Create_Graph
-	{
-		our ($folderFigure, $filename, $maxValue) = @_;
-
-		# Open the connection with R
-		my $R = Statistics::R->new() or die "Impossible to create a communication bridge with R\n";
-		$R->startR() ;
-		# Load the Library
-		$R->send(q`library(ggplot2)`);
-		$R->send(q`library(gplots)`);
-		$R->send(q`library(gtable)`);
-
-
-		$R->send(qq`##########################################
-								##		OVERALL MUTATION DISTRIBUTION 		##
-								##########################################
-								distrMut <- read.table("$folderFigure/Overall_mutation_distribution/$filename/$filename-OverallMutationDistribution.txt", header=T)`);
-		$R->send(q`# Add the count of each category in the legend
-							 distrMut$Legend[[1]] <- paste0(distrMut$Variant_type[[1]], " (", distrMut$Count[[1]], ")")
-							 distrMut$Legend[[2]] <- paste0(distrMut$Variant_type[[2]], " (", distrMut$Count[[2]], ")")
-							 distrMut$Legend[[3]] <- paste0(distrMut$Variant_type[[3]], " (", distrMut$Count[[3]], ")")`);
-
-		$R->send(qq`# Base plot
-								pie <- ggplot(distrMut, aes(x=factor(""), fill=Legend, weight=Count)) + geom_bar(width=1) + coord_polar(theta="y") + scale_x_discrete("", breaks=NULL) + scale_y_continuous("", breaks=NULL) + labs(fill="")
-								# Background of the plot entire white
-								pie <- pie + theme(panel.grid.major = element_line(colour="white"), panel.grid.minor = element_line(colour="white"), panel.background = element_rect(fill="white"))
-								# Legend on right in 3 rows
-								pie <- pie + theme(legend.position="bottom") +  guides(fill=guide_legend(nrow=3))
-								# Change the color and the title of the legend
-								pie <- pie + scale_fill_brewer("Variant type", palette="Set1")
-								# Remove all the margins
-								pie <- pie + theme(plot.margin=unit(c(-1, 0, -1.5, 0), "cm"))
-								# Save the pie chart for the HTML page (higher resolution)
-								options(bitmapType='cairo') # Use cairo device as isn't possible to install X11 on the server...
-								png("$folderFigure/Overall_mutation_distribution/$filename/$filename-OverallMutationDistribution.png", width=700, height=1100, res=300)
-								print(pie)
-								dev.off()
-
-
-		         		##########################################
-								##			SBS MUTATION DISTRIBUTION 			##
-								##########################################
-		         		distrSBS <- read.delim("$folderFigure/SBS_distribution/$filename/$filename-SBS_distribution.txt")
-								distrSBS <- data.frame(distrSBS)
-		         		bar <- ggplot(distrSBS, aes(x=Mutation_Type, y=Percentage, fill=Mutation_Type))
-								bar <- bar + geom_bar(stat="identity", width=0.5)
-								# Theme classic
-								bar <- bar + theme_classic()
-								# Remove the axis legend
-								bar <- bar + xlab("")
-								# Set the color of the bars and Changing the labels in the legend
-								bar <- bar + scale_fill_manual(values=c("blue", "black", "red", "gray", "#00CC33", "pink"),
-								                               labels=c("C:G>A:T", "C:G>G:C", "C:G>T:A", "T:A>A:T", "T:A>C:G", "T:A>G:C")
-								                              )
-								# Remove the label in x axis
-								bar <- bar + theme(axis.text.x = element_blank())
-								# Change the name of the y label
-								bar <- bar + ylab("Percent")
-								# Save the plot for the HTML page (higher resolution)
-								options(bitmapType='cairo')
-								png("$folderFigure/SBS_distribution/$filename/$filename-SBS_distribution.png", width=1800, height=1500, res=300)
-								print(bar);
-								dev.off()
-								# Save the plot for the report
-								bar
-								ggsave("$folder_temp/$filename-SBS_distribution-Report.png")
-
-
-								##########################################
-								##					IMPACT ON PROTEIN 					##
-								##########################################
-								impactProt <- read.table("$folderFigure/Impact_protein_sequence/$filename/$filename-DistributionExoFunc.txt", header=T)
-								# Custom palette: black, orange, dark green, yellow, light blue, dark blue, darkslateblue, red, purple, pink, light green, turquoise, gray
-								cb_palette <- c("#000000", "#E69F00", "#006600", "#660000", "#F0E442", "#56B4E9", "#3300FF", "#483D8B", "#FF0000", "#9900CC", "#FF66CC", "#00CC00", "#66FFFF", "#C0C0C0")
-								pie <- ggplot(impactProt, aes(x=factor(""), fill=AA_Change, weight=Count)) + geom_bar(width=1) + coord_polar(theta="y") + scale_x_discrete("", breaks=NULL)+ scale_y_continuous("", breaks=NULL) + scale_fill_manual(values=cb_palette)
-								# Background of the plot entire white
-								pie <- pie + theme(panel.grid.major = element_line(colour="white"), panel.grid.minor = element_line(colour="white"), panel.background = element_rect(fill="white"))
-								# Legend in two column
-								pie <- pie + guides(fill=guide_legend(ncol=2)) + theme(legend.position="bottom")
-								# Remove the legend title
-								pie <- pie + labs(fill="")
-								# Save the plot for the HTML page (higher resolution)
-								options(bitmapType='cairo')
-								png("$folderFigure/Impact_protein_sequence/$filename/$filename-DistributionExoFunc.png", width=1600, height=1800, res=300)
-								print(pie)
-								dev.off()
-								# Save the plot for the report
-								pie
-								ggsave("$folder_temp/$filename-DistributionExoFunc-Report.png")
-
-
-								##########################################
-								##							STRAND BIAS 					  ##
-								##########################################
-								cb_palette_SB <- c("#0072B2", "#CC0000")
-								file_sb       <- read.table("$folderFigure/Stranded_Analysis/$filename/$filename-StrandBias.txt", header=T);
-								p_sb          <- ggplot(file_sb, aes(x=Alteration, y=Count, fill=Strand)) + theme_classic() + geom_bar(stat="identity", position="dodge") + scale_fill_manual(values=cb_palette_SB) + theme(axis.text.x = element_text(angle=60, hjust=1)) + xlab("") + theme(legend.position="bottom")
-								# Save the plot for the HTML page (higher resolution)
-								options(bitmapType='cairo')
-								png("$folderFigure/Stranded_Analysis/$filename/$filename-StrandBias.png", width=1000, height=1200, res=300)
-								print(p_sb)
-								dev.off()
-								# Save the plot for the report
-								p_sb
-								ggsave("$folder_temp/$filename-StrandBias-Report.png")
-
-
-								##########################################
-								##			HEATMAP SEQUENCE CONTEXT 				##
-								##						GENOMIC STRAND 						##
-								##########################################
-								## COUNT
-								heatmap_G <- read.table("$folderFigure/Trinucleotide_Sequence_Context/$filename/$filename-HeatmapCount-Genomic.txt", header=T)
-								# Save the plot for the report
-								options(bitmapType='cairo')
-								png(filename="$folder_temp/$filename-HeatmapCount-Genomic-Report.png", bg="transparent", width=240, height=360)
-								# Heatmap with an absolute scale
-								heatmap.2(as.matrix(heatmap_G),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_G)),labCol=colnames(as.matrix(heatmap_G)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
-								dev.off()
-								# Save the plot for the HTML page (higher resolution)
-								options(bitmapType='cairo')
-								png(filename="$folderFigure/Trinucleotide_Sequence_Context/$filename/$filename-HeatmapCount-Genomic.png", width=1100, height=1600, res=300)
-								heatmap.2(as.matrix(heatmap_G),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_G)),labCol=colnames(as.matrix(heatmap_G)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
-								dev.off()
-
-								## PERCENT
-								heatmap_G <- read.table("$folderFigure/Trinucleotide_Sequence_Context/$filename/$filename-HeatmapPercent-Genomic.txt", header=T)
-								# Save the plot for the report
-								options(bitmapType='cairo')
-								png(filename="$folder_temp/$filename-HeatmapPercent-Genomic-Report.png",bg="transparent", width=240, height=360)
-								# Heatmap with an absolute scale
-								heatmap.2(as.matrix(heatmap_G),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_G)),labCol=colnames(as.matrix(heatmap_G)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
-								dev.off()
-								# Save the plot for the HTML page (higher resolution)
-								options(bitmapType='cairo')
-								png(filename="$folderFigure/Trinucleotide_Sequence_Context/$filename/$filename-HeatmapPercent-Genomic.png", width=1100, height=1600, res=300)
-								heatmap.2(as.matrix(heatmap_G),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_G)),labCol=colnames(as.matrix(heatmap_G)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
-								dev.off()`);
-		$R->stopR() ;
-
-		## Plot the transcriptional strand bias in mutation signature
-		`Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$filename/$filename-StrandedSignatureCount.txt $folderFigure/Stranded_Analysis/$filename/$filename-StrandedSignatureCount $folder_temp/$filename-StrandedSignatureCount Count 2>&1`;
-		`Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$filename/$filename-StrandedSignaturePercent.txt $folderFigure/Stranded_Analysis/$filename/$filename-StrandedSignaturePercent $folder_temp/$filename-StrandedSignaturePercent Percent 2>&1`;
 	}
 	# Write the titles of the different sections of the report
 	sub WriteBoderSection
@@ -3316,7 +3057,7 @@ mutSpec-Stat
 
 	mutSpecstat.pl [arguments] <query-file>
 
-  <query-file>                                   can be a folder with multiple VCF or a single VCF
+  <query-file>                                   a folder with one or multiple VCF
 
   Arguments:
         -h,        --help                        print help message
@@ -3332,9 +3073,9 @@ mutSpec-Stat
 
 Function: automatically run a pipeline and calculate various statistics on mutations
 
- Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample input
+ Example: mutSpecstat.pl --refGenome hg19 --outfile output_directory --temp path_to_temporary_directory --pathRscript path_to_R_scripts --pathSeqRefGenome path_fasta_ref_seq --poolData --reportSample inputFolder
 
- Version: 08-2016 (August 2016)
+ Version: 10-2016 (October 2016)
 
 
 =head1 OPTIONS
