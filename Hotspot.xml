@@ -16,7 +16,7 @@ mkdir in;
 ln -s "$f" "in/$f.name";
 #end for
 
-\$SCRIPT_PATH/hotspotconfig.sh in output outputsummary $infofile $pair
+sh \$SCRIPT_PATH/hotspotconfig.sh in output outputsummary $infofile $pair
 
 
 </command>
