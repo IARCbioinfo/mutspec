@@ -44,9 +44,11 @@ if($dbSNP_value > 0) { $dbSNP = 1; }
 if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
 
 # Zero databases is specified
-if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0) )
+if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0) && (scalar(@filters) == 0) )
 {
-	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
+	print STDERR "There is no databases selected for filtering against!!!\n";
+	print STDERR "Please chose at least one between dbSNP, SegDup, ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
+	print STDERR "Or specify a BED file\n";
 	exit;
 }
 
@@ -103,7 +105,7 @@ else
 }
 
 ### filter versus additional VCF files if provided.
-if ( $#filters > 0) { filterAdditionalBED(); }
+if ( scalar(@filters) > 0) { filterAdditionalBED(); }
 
 
 
