@@ -1,9 +1,9 @@
 # !/usr/bin/perl
 
 #-----------------------------------#
-# Author: Maude                     #
+# Author: Maude / Vincent           #
 # Script: mutspecFilter.pl          #
-# Last update: 22/08/16             #
+# Last update: 21/10/16             #
 #-----------------------------------#
 
 use strict;
@@ -21,7 +21,7 @@ our ($verbose, $man, $help)             = (0, 0, 0);    # Parse options and prin
 our ($dbSNP_value, $segDup, $esp, $thG, $exac) = (0, 0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome, Exac.
 our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
 our ($listAVDB)                         = "empty";      # Text file with the list Annovar databases.
-our ($dir)                              = "";
+our ($dir)                              = "";           # Path to BED file to filter against
 our (@filters);
 
 GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'exac'=>\$exac, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
@@ -46,7 +46,7 @@ if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
 # Zero databases is specified
 if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0) )
 {
-	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome), EXac or 1000 genome (only for human genome)\n";
+	print STDERR "There is no databases selected for filtering against!!!\nPlease chose at least one between dbSNP, SegDup, ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
 	exit;
 }
 
@@ -103,7 +103,7 @@ else
 }
 
 ### filter versus additional VCF files if provided.
-if ( $#filters > 0){ filterAdditionalBED(); }
+if ( $#filters > 0) { filterAdditionalBED(); }
 
 
 
@@ -156,7 +156,7 @@ sub filterAgainstPublicDB
 		if( $esp    == 1 && $espAllInfo > 0.001)  		  { $filter = 1; }
 		if( $thG 	== 1 && $thgInfo > 0.001)  		  	  { $filter = 1; }
 		if( $thG 	== 1 && $exacInfo > 0.001)  		  { $filter = 1; }
-		
+
 		if (!$filter) { print FILTER "$_\n"; }
 
 	}
@@ -226,7 +226,7 @@ sub ExtractAVDBName
 
 			$$refS_protocol .= $AVdbName_final.",";
 		}
-		
+
 	}
 	close F1;
 
@@ -313,19 +313,23 @@ sub filterAdditionalBED{
 	close TABLE;
 	#and sort it
 	`sort -k1,1 -k2,2n bed > sorted`;
-	
+
 	foreach my $filter (@filters){
-		
+
+		my ($filename, $directories, $suffix) = fileparse($filter, qr/\.[^.]*/);
+
+		print "\tFilter against BED: $filename\n";
+
 		#find intersect
 		`sort -k1,1 -k2,2n $filter > ref`;
 		`bedtools intersect -a sorted -b ref -v -sorted > bed`;
 		`sort -k1,1 -k2,2n bed > sorted`;
 	}
-	
+
 	#generate new output
 	`sort -k4n sorted > bed`;
 	`cp $output table`;
-	
+
 	open(F1, "bed") or die "error no sorted file";
 	open(F2, "table") or die "error no table file";
 	open(OUT, ">$output") or die "error cannot open output file";
@@ -341,7 +345,7 @@ sub filterAdditionalBED{
 	close F1;
 	close F2;
 	close OUT;
-		
+
 }
 
 
@@ -360,25 +364,29 @@ mutspecFilter - Filter a file annotated with MutSpec-Annot tool. Variants presen
         -h,        --help                        print help message
         -m,        --man                         print complete documentation
         -v,        --verbose                     use verbose output
-									 --dbSNP <value>               filter against dbSNP database. Specify the number of the dbSNP column in the file
+									 --dbSNP <value>               filter against dbSNP database. Specify the number of the dbSNP column in the file (start to count from 1)
 									 --segDup                      filter against genomic duplicate database
 									 --esp                         filter against Exome Sequencing Project database (only for human)
 									 --thG                         filter against 1000 genome database (onyl for human)
 			  -o,        --outfile <string>            name of output file
 			             --refGenome                   reference genome to use
 			             --pathAVDBList                path to the list of Annovar databases installed
+			             --filter                      path to a bed file
 
 
 Function: Filter out variants present in public databases
 
  Example: # Filter against dbSNP
- 					mutspecFilter.pl --dbSNP col_number --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
+ 					mutspecFilter.pl --dbSNP col_number (start to count from 1) --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
- 					# Filter against the four databases
- 					mutspecFilter.pl --dbSNP col_number --segDup --esp --thG --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
+ 					# Filter against all Annovar databases
+ 					mutspecFilter.pl --dbSNP col_number (start to count from 1) --segDup --esp --thG --exac --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
+
+ 					# Filter against additional databases in BED format
+ 					mutspecFilter.pl --filter path_to_bed --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
 
- Version: 08-2016 (August 2016)
+ Version: 10-2016 (October 2016)
 
 
 =head1 OPTIONS
@@ -400,7 +408,7 @@ use verbose output.
 =item B<--dbSNP>
 
 Remove all the variants presents in the dbSNP databases
-Specify the number of column containing the annotation
+Specify the number of the dbSNP column in the file (start to count from 1)
 For human and mouse genome
 
 =item B<--segDup>
@@ -417,9 +425,20 @@ For human genome only
 
 Remove all the variants with a frequency greater than 0.001 in 1000 genome database
 
+
+=item B<--exac>
+
+Remove all the variants with a frequency greater than 0.001 in ExAC database
+
+
+=item B<--filter>
+
+Remove all variants present in the BED file
+
+
 =item B<--refGenome>
 
-the reference genome to use, could be hg19 or mm9.
+The reference genome to use.
 
 =item B<--outfile>
 
@@ -433,6 +452,8 @@ the path to a texte file containing the list of the Annovar databases installed.
 
 =head1 DESCRIPTION
 
-mutspecFilter - Filter a file annotated with MutSpec-Annot tool. Variants present in public databases (dbSNP, SegDup, ESP, 1000 genome obtained from Annovar) will be removed from the input file (with frequency limits described above)
+mutspecFilter - Filter a file annotated with MutSpec-Annot tool.
+Variants present in public databases (dbSNP, SegDup, ESP, 1000 genome, exac obtained from Annovar) will be removed from the input file (with frequency limits described above).
+Additionally, using the --filter option, any variants present in a specified bed file will be removed from the input file.
 
 =cut
