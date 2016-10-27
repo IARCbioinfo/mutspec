@@ -366,7 +366,7 @@ else{
 }
 if($type!~/^Normal-Tumor-Duplicates$/){							#All the case without case with duplicates
 	foreach my $c (@ordcat){										#Foreach ordered categries name
-		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";	#Add the future column in the header
+		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";	#Add the future column in the header
 	}
 }
 else{															#Case normal-tumor-duplicate
@@ -375,7 +375,7 @@ else{															#Case normal-tumor-duplicate
 		if($c eq $header[$#header]){				#$header[$#header] eq "Duplicates" --> If duplicates next because considers as the tumor
 			next;
 		}
-		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";
+		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";
 	}
 }
 
@@ -399,7 +399,7 @@ chdir($opts{s}) or die("Erreur chdir pour aller dans le répertoire $opts{s} \n"
 #			3 Name of the sample of the categorie where this variant was find
 #		else
 #			1 0
-#			2 0%
+#			2 0
 #			3 NA
 #	End
 #End
@@ -428,10 +428,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 					$concernsample.=$n.',';				#Concatenate
 				}
 				chop($concernsample);
-				$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+				$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 			}
 			else{
-				$aecrire.="\t0\t0 %\tNA";				#Else no sample of this categorie where the variant is find
+				$aecrire.="\t0\t0\tNA";				#Else no sample of this categorie where the variant is find
 			}
 		}
 	}
@@ -451,10 +451,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 						$concernsample.=$n.',';				#Concatenate
 					}
 					chop($concernsample);
-					$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+					$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 				}
 				else{
-					$aecrire.="\t0\t0 %\tNA";
+					$aecrire.="\t0\t0\tNA";
 				}
 			}
 			else{										#Case categorie Normal
@@ -467,10 +467,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 						$concernsample.=$n.',';				#Concatenate
 					}
 					chop($concernsample);
-					$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+					$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 				}
 				else{
-					$aecrire.="\t0\t0 %\tNA";
+					$aecrire.="\t0\t0\tNA";
 				}
 			}
 		}
