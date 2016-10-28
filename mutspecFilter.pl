@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude / Vincent           #
 # Script: mutspecFilter.pl          #
-# Last update: 21/10/16             #
+# Last update: 28/10/16             #
 #-----------------------------------#
 
 use strict;
@@ -49,7 +49,7 @@ if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0
 	print STDERR "There is no databases selected for filtering against!!!\n";
 	print STDERR "Please chose at least one between dbSNP, SegDup, ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
 	print STDERR "Or specify a BED file\n";
-	exit;
+	exit 2;
 }
 
 
@@ -248,7 +248,6 @@ sub ExtractAVDBName
 		elsif($$refS_month == 10) { $$refS_month = "oct"; }
 		elsif($$refS_month == 11) { $$refS_month = "nov"; }
 		elsif($$refS_month == 12) { $$refS_month = "dec"; }
-		else { print STDERR "Month number don't considered\n"; exit; }
 	}
 }
 
@@ -277,7 +276,11 @@ sub recoverNumCol
 		  if($name_of_column_NB eq "toto") { next; }
 		  else                             { return $name_of_column_NB; }
 		}
-		if($name_of_column eq "toto") { print "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
+		if($name_of_column eq "toto")
+		{
+			print STDERR "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n";
+			exit 3;
+		}
 	}
 	# Only one name is pass
 	else
@@ -292,8 +295,15 @@ sub recoverNumCol
 	  {
 	    if($tab_search_header[$i] eq $name_of_column) { $name_of_column_NB = $i; }
 	  }
-	  if($name_of_column_NB eq "toto") { print "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
-	  else                        { return $name_of_column_NB; }
+	  if($name_of_column_NB eq "toto")
+	  {
+	  	print STDERR "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n";
+	  	exit 3;
+	  }
+	  else
+	  {
+	  	return $name_of_column_NB;
+	  }
 	}
 }
 
@@ -320,7 +330,7 @@ sub filterAdditionalBED{
 
 		my ($filename, $directories, $suffix) = fileparse($filter, qr/\.[^.]*/);
 
-		print "\tFilter against BED: $filename\n";
+		print STDOUT "\tFilter against BED: $filename\n";
 
 		#find intersect
 		`sort -k1,1 -k2,2n $filter > ref`;
