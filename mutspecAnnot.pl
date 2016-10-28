@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 22/08/16             #
+# Last update: 28/10/16             #
 #-----------------------------------#
 
 use strict;
@@ -75,8 +75,8 @@ FullAnnotation();
 sub CheckFlags
 {
 	# Check the reference genome
-	if($refGenome eq "empty")   { print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n"; exit; }
-	if($intervalEnd eq "empty") { print STDERR "You forget to specify the length for the sequence context!!!\nPlease specify it with the flag --intervalEnd\n"; exit; }
+	if($refGenome eq "empty")   { print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n"; exit 2; }
+	if($intervalEnd eq "empty") { print STDERR "You forget to specify the length for the sequence context!!!\nPlease specify it with the flag --intervalEnd\n"; exit 2; }
 	# If no output is specified write the result as the same place as the input file
 	if($output eq "empty")
 	{
@@ -98,11 +98,11 @@ sub CheckFlags
 	if(!-e $folderAnnovar) { mkdir($folderAnnovar) or die "$!: $folderAnnovar\n"; }
 
 	# Verify the access to Annovar databases
-	if($path_AVDB eq "empty") { print STDERR "You forget to specify the path to Annovar databases!!!\nPlease specify it with the flag --pathAnnovarDB\n"; exit; }
-	elsif(!-e $path_AVDB) { print STDERR"\nCan't access Annovar databases!\nPlease check the access to the disk\n"; exit; }
+	if($path_AVDB eq "empty") { print STDERR "You forget to specify the path to Annovar databases!!!\nPlease specify it with the flag --pathAnnovarDB\n"; exit 2; }
+	elsif(!-e $path_AVDB) { print STDERR"\nCan't access Annovar databases!\nPlease check the access to the disk\n"; exit 3; }
 
 	# Check the file list AV DB
-	if($pathAVDBList eq "empty") { print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n"; exit; }
+	if($pathAVDBList eq "empty") { print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n"; exit 2; }
 	else { $listAVDB = "$pathAVDBList/${refGenome}_listAVDB.txt" }
 
 	# If no temp folder is specified write the result in the current path
@@ -153,7 +153,7 @@ sub CheckLengthFilename
 	## Verify the name of file, must be <= 31 chars for the sheet name
 	my ($filename, $directories, $suffix) = fileparse($inputFile, qr/\.[^.]*/);
 
-	if(length($filename) > 32) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit; }
+	if(length($filename) > 32) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit 4; }
 }
 
 # Recover the input format (vcf or txt) and depending on the format convert the input file in a suitable format for Annovar (ex: for MuTect files keep only the confident variants)
@@ -354,7 +354,7 @@ sub RecoverColNameAuto
 	{
 		print STDERR "The columns name are not in the dictionnary please change them before running the tool again\nFile concerning: $inputFile\n";
 		print STDERR "TIP: Use one of the columns names proposed in the section Input formats of the tool\n";
-		exit;
+		exit 4;
 	}
 
 	# Extract the number of the column that contain the information
@@ -412,7 +412,7 @@ sub FullAnnotation
 				if($filename =~ /(.+)-VariantListVCF-ColumnCorrect/) { $filenameOK = $1; }
 				else { $filenameOK = $1; }
 			}
-			else { print STDERR "Case not considered for $filename!!!\n"; exit; }
+			else { print STDERR "Case not considered for $filename!!!\n"; exit 4; }
 
 
 			#################################################
@@ -445,7 +445,7 @@ sub FullAnnotation
 			my $lines_per_temp = int(1+($1 / $cpu)); # +1 in case of the div == 0
 			`split -l $lines_per_temp $fileNoHeader $folder_temp/$filenameOK/$filenameOK-`;
 
-			if($headerOriginalFile eq "") { print STDERR "No header for the file $file!!!\nPlease check the format of your file\n"; exit; }
+			if($headerOriginalFile eq "") { print STDERR "No header for the file $file!!!\nPlease check the format of your file\n"; exit 4; }
 			my @files = <$folder_temp/$filenameOK/$filenameOK-*>;
 
 			#################################################
@@ -477,7 +477,7 @@ sub FullAnnotation
 						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
 						print STDERR $_;
 						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
-						exit;
+						exit 5;
 					}
 				}
 				close F1;
@@ -582,7 +582,7 @@ sub FullAnnotation
 		my $lines_per_temp = int(1+($1 / $cpu)); # +1 in case of the div == 0
 		`split -l $lines_per_temp $fileNoHeader $folder_temp/$filenameO/$filenameO-`;
 
-		if($headerOriginalFile eq "") { print STDERR "No header for the file $input!!!\nPlease check the format of your file\n"; exit; }
+		if($headerOriginalFile eq "") { print STDERR "No header for the file $input!!!\nPlease check the format of your file\n"; exit 4; }
 		my @files = <$folder_temp/$filenameO/$filenameO-*>;
 
 		#################################################
@@ -614,7 +614,7 @@ sub FullAnnotation
 						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
 						print STDERR $_;
 						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
-						exit;
+						exit 5;
 					}
 				}
 				close F1;
@@ -772,7 +772,7 @@ sub AnnotateAV
 {
 	my ($inputFile, $output) = @_;
 
-	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit; }
+	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit 4; }
 
 	# Extract the name of the databases
 	my $protocol = ""; my $operation = "";
@@ -836,7 +836,6 @@ sub AnnotateAV
 			elsif($$refS_month == 10) { $$refS_month = "oct"; }
 			elsif($$refS_month == 11) { $$refS_month = "nov"; }
 			elsif($$refS_month == 12) { $$refS_month = "dec"; }
-			else { print STDERR "Month number don't considered\n"; exit; }
 		}
 	}
 }
@@ -846,7 +845,7 @@ sub annotateAV_min
 {
 	my ($inputFile, $output) = @_;
 
-	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit; }
+	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit 4; }
 
 	# Extract the name of the databases
 	my ($protocol, $operation) = ("refGene", "g");
@@ -885,12 +884,12 @@ sub RecoverStrand
 		else { $chr = $tab[$chr_value]; }
 
 		# Verify if the element exists
-		if($chr eq "")                       { print "Error RecoverStrand: The chromosome value is nor defined for $_\n"; exit; }
-		if(! exists $tab[$start_value])      { print "Error RecoverStrand: The start value is nor defined for $_\n"; exit; }
-		if(! exists $tab[$ref_value])        { print "Error RecoverStrand: The reference value is nor defined for $_\n"; exit; }
-		if(! exists $tab[$alt_value])        { print "Error RecoverStrand: The alternate value is nor defined for $_\n"; exit; }
-		if(! exists $tab[$func_value])       { print "Error RecoverStrand: The functional value is nor defined for $_\n"; exit; }
-		if(! exists $tab[$geneSymbol_value]) { print "Error RecoverStrand: The gene symbol value is nor defined for $_\n"; exit; }
+		if($chr eq "")                       { print STDERR "Error RecoverStrand: The chromosome value is nor defined for $_\n"; exit 4; }
+		if(! exists $tab[$start_value])      { print STDERR "Error RecoverStrand: The start value is nor defined for $_\n"; exit 4; }
+		if(! exists $tab[$ref_value])        { print STDERR "Error RecoverStrand: The reference value is nor defined for $_\n"; exit 4; }
+		if(! exists $tab[$alt_value])        { print STDERR "Error RecoverStrand: The alternate value is nor defined for $_\n"; exit 4; }
+		if(! exists $tab[$func_value])       { print STDERR "Error RecoverStrand: The functional value is nor defined for $_\n"; exit 4; }
+		if(! exists $tab[$geneSymbol_value]) { print STDERR "Error RecoverStrand: The gene symbol value is nor defined for $_\n"; exit 4; }
 
 		my $geneSymbol = "";
 		######## For the splicing annotation we separate the gene symbol from the aa change
@@ -921,7 +920,7 @@ sub RecoverStrand
 		my @tab = split("\t", $_);
 		my $strand = "";
 		$strand = $tab[$db_strandInfo_value];
-		if($strand eq "") { print STDERR "Error: the strand orientation is not specify in the database refGene\n$_\n"; exit; }
+		if($strand eq "") { print STDERR "Error: the strand orientation is not specify in the database refGene\n$_\n"; exit 4; }
 		else
 		{
 			# Some genes have several strand orientation, keep the first in the database
@@ -972,7 +971,7 @@ sub RecoverStrand
 		{
 			if("$tab[5]:$tab[0]" eq $kDB)
 			{
-				if($lengthHeader != $lengthLine) { print STDERR "Error Recover Strand the length of the current line is not valid!!!!!\nExpected length: $lengthHeader\tlength of the line: $lengthLine\n$h_inputFile{$kFile}[0]\n"; exit; }
+				if($lengthHeader != $lengthLine) { print STDERR "Error Recover Strand the length of the current line is not valid!!!!!\nExpected length: $lengthHeader\tlength of the line: $lengthLine\n$h_inputFile{$kFile}[0]\n"; exit 4; }
 
 				foreach my $line (@{$h_inputFile{$kFile}})
 				{
@@ -1238,7 +1237,7 @@ sub recoverNumCol
   {
     if($tab_search_header[$i] eq $name_of_column) { $name_of_column_NB = $i; last; }
   }
-  if($name_of_column_NB eq "toto") { print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
+  if($name_of_column_NB eq "toto") { print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit 4; }
   else                             { return $name_of_column_NB; }
 }
 
@@ -1274,7 +1273,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 08-2016 (August 2016)
+ Version: 10-2016 (October 2016)
 
 
 =head1 OPTIONS

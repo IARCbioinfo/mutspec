@@ -59,6 +59,11 @@
   	<data  type="data" name="output" format="tabular" label="${input.name.split(' ')[0]} filtered" />
 </outputs>
 
+<stdio>
+    <exit_code range="2"   level="fatal"   description="No databases selected" />
+    <exit_code range="3"   level="fatal"   description="" />
+</stdio>
+
 <help>
 
 **What it does**
