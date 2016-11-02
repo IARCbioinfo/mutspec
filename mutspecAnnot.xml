@@ -34,10 +34,10 @@
 </outputs> 
 
 <stdio>
-    <regex match="ANNOVAR LOG FILE"
-           source="stdout"
-           level="fatal"
-           description="Read Annovar log file for more information" />
+    <exit_code range="2"   level="fatal"   description="Empty arguments" />
+    <exit_code range="3"   level="fatal"   description="Pb access Annovar DB" />
+    <exit_code range="4"   level="fatal"   description="" />
+    <exit_code range="5"   level="fatal"   description="Read Annovar log file for more information" />
 </stdio>
 
 <help>

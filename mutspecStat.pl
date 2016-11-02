@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 18/10/16             #
+# Last update: 28/10/16             #
 #-----------------------------------#
 
 use strict;
@@ -90,7 +90,7 @@ rmtree($folderCheckedForStat);
 sub CheckFlags
 {
 	# Check the reference genome
-	if($refGenome eq "empty") { print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n"; exit; }
+	if($refGenome eq "empty") { print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n"; exit 2; }
 
 	# If no output is specified write the result as the same place as the input file
 	if($output eq "empty")
@@ -114,7 +114,7 @@ sub CheckFlags
 	if(!-e $folder_temp)        { mkdir($folder_temp) or die "$!: $folder_temp\n"; }
 
 	# Check the path to the R scripts
-	if($path_R_Scripts eq "empty") { print STDERR "You forget to specify the path for the R scripts!!!\nPlease specify it with the flag --pathRscript\n"; exit; }
+	if($path_R_Scripts eq "empty") { print STDERR "You forget to specify the path for the R scripts!!!\nPlease specify it with the flag --pathRscript\n"; exit 2; }
 
 
 	# The input is a folder
@@ -130,7 +130,7 @@ sub CheckLengthFilename
 	## Verify the name of file, must be <= 31 chars for the sheet name
 	my ($filename, $directories, $suffix) = fileparse($inputFile, qr/\.[^.]*/);
 
-	if(length($filename) > 31) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit; }
+	if(length($filename) > 31) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit 3; }
 }
 
 # Remove file(s) with zero variants
@@ -197,7 +197,7 @@ sub CheckAnnotationFile
 		  {
 		    if($tab_search_header[$i] eq "Func.refGene") { $value_of_column_NB = $i; }
 		  }
-		  if($value_of_column_NB eq "toto") { print STDERR "Error the input file you specify is not annotated! $inputFile/$file !!!!\nPlease first annotate your file before trying to generate the report on mutation patterns\n"; exit; }
+		  if($value_of_column_NB eq "toto") { print STDERR "Error the input file you specify is not annotated! $inputFile/$file !!!!\nPlease first annotate your file before trying to generate the report on mutation patterns\n"; exit 3; }
 		}
 	}
 	else
@@ -211,7 +211,7 @@ sub CheckAnnotationFile
 		{
 			if($tab_search_header[$i] eq "Func.refGene") { $value_of_column_NB = $i; }
 		}
-		if($value_of_column_NB eq "toto") { print STDERR "Error the input file you specify is not annotated! $inputFile !!!!\nPlease first annotate your file before trying to generate the report on mutation patterns\n"; exit; }
+		if($value_of_column_NB eq "toto") { print STDERR "Error the input file you specify is not annotated! $inputFile !!!!\nPlease first annotate your file before trying to generate the report on mutation patterns\n"; exit 3; }
 	}
 }
 
@@ -244,7 +244,7 @@ sub ReportMutDist
 	################################################################################################
 	############ Recover Annovar annotations (for having the save number of functional regions for each samples)
 	my @tab_func = recoverAnnovarAnnotation($input, $func_name);
-	if(@tab_func == 0) { print STDERR "Error the table for the functional region is empty!!!!! check $input $func_name\n"; exit; }
+	if(@tab_func == 0) { print STDERR "Error the table for the functional region is empty!!!!! check $input $func_name\n"; exit 3; }
 
 	############ Calculate the different statistics present in the report
 	my %h_file   = ();
@@ -377,11 +377,11 @@ sub ReportMutDist
 				############ Control the annotated file pass in argument
 				## Check if the files have variants
 				my $nbLines_originalFile = `wc -l $folderPool/$file`; $nbLines_originalFile =~ /(\d+) /;
-				if($1==1) { print STDERR "\n\nNo line in the file $folderPool/$file\n\n"; exit; }
+				if($1==1) { print STDERR "\n\nNo line in the file $folderPool/$file\n\n"; exit 3; }
 				## Check if there is variant with strand information. If not the rest of the script generates errors
 				my $testFile = 0;
 				CheckVariantReport("$folderPool/$file", $strand_value, \$testFile);
-				if($testFile==0) { print STDERR "\n\nNo strand information for the file $folderPool/$file\n\n"; exit; }
+				if($testFile==0) { print STDERR "\n\nNo strand information for the file $folderPool/$file\n\n"; exit 3; }
 				############ Control the annotated file pass in argument
 
 				############ Calculate the statistics
@@ -405,11 +405,11 @@ sub ReportMutDist
 			############ Control the annotated file pass in argument
 			## Check if the files have variants
 			my $nbLines_originalFile = `wc -l $input`; $nbLines_originalFile =~ /(\d+) /;
-			if($1==1) { print STDERR "\n\nNo line in the file $input\n\n"; exit; }
+			if($1==1) { print STDERR "\n\nNo line in the file $input\n\n"; exit 3; }
 			## Check if there is variant with strand information. If not the rest of the script generates errors
 			my $testFile = 0;
 			CheckVariantReport($input, $strand_value, \$testFile);
-			if($testFile==0) { print STDERR "\n\nNo strand information for the file $input\n\n"; exit; }
+			if($testFile==0) { print STDERR "\n\nNo strand information for the file $input\n\n"; exit 3; }
 			############ Control the annotated file pass in argument
 
 			############ Calculate the statistics
@@ -2013,13 +2013,13 @@ sub ReportMutDist
 		  # Write the total number of SBS per mutation type: COUNT
 		  $ws->write($row_SeqContext6, $colStart_matrixSeqContext+4, $c_ca6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+5, $c_cg6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+6, $c_ct6_g, $formatT_bottomHeader2);
 		  $ws->write($row_SeqContext6, $colStart_matrixSeqContext+7, $c_ta6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+8, $c_tc6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+9, $c_tg6_g, $formatT_bottomHeader2);
-  		if($total_SBS_genomic != $refH_file->{$k_file}{'TotalSBSGenomic'}) { print STDERR "Error in the calculation of the total number of SBS on the genomic strand!!!!\nFrom hash table $refH_file->{$k_file}{'TotalSBSGenomic'}\tVS\t$total_SBS_genomic\n"; exit; }
+  		if($total_SBS_genomic != $refH_file->{$k_file}{'TotalSBSGenomic'}) { print STDERR "Error in the calculation of the total number of SBS on the genomic strand!!!!\nFrom hash table $refH_file->{$k_file}{'TotalSBSGenomic'}\tVS\t$total_SBS_genomic\n"; exit 3; }
 
 		  # Write the total number of SBS per mutation type: PERCENT
 		  $ws->write($row_SeqContext6, $colStart_matrixSeqContext+14, $p_ca6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+15, $p_cg6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+16, $p_ct6_g, $formatT_bottomHeader2);
 		  $ws->write($row_SeqContext6, $colStart_matrixSeqContext+17, $p_ta6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+18, $p_tc6_g, $formatT_bottomHeader2); $ws->write($row_SeqContext6, $colStart_matrixSeqContext+19, $p_tg6_g, $formatT_bottomHeader2);
 		  my $totalPercent_genomic = $p_ca6_g + $p_cg6_g + $p_ct6_g + $p_ta6_g + $p_tc6_g + $p_tg6_g; $totalPercent_genomic = sprintf("%.0f", $totalPercent_genomic);
-		  if($totalPercent_genomic != 100) { print STDERR "Error in the calculation of the total percentages on the genomic strand!!!\nThe total is equal to=\t$totalPercent_genomic\n"; exit; }
+		  if($totalPercent_genomic != 100) { print STDERR "Error in the calculation of the total percentages on the genomic strand!!!\nThe total is equal to=\t$totalPercent_genomic\n"; exit 3; }
 
 
 		  #----------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -2217,11 +2217,11 @@ sub ReportMutDist
   		$ws->write($row_SeqContext12Percent, $colStart_matrixSeqContext+11, $percent_tg_NonTr, $formatT_bottomHeader); $ws->write($row_SeqContext12Percent, $colStart_matrixSeqContext+12, $percent_tg_Tr, $formatT_bottomHeader);
 
   		if($total_SBS_coding == $refH_file->{$k_file}{'TotalSBSCoding'}) { $ws->write($row_SeqContext12, $colStart_matrixSeqContext+13, $refH_file->{$k_file}{'TotalSBSCoding'}, $formatT_bottomHeader2) }
-  		else { print STDERR "Error in the calculation of the total number of SBS on the coding strand!!!!\nFrom hash table $refH_file->{$k_file}{'TotalSBSCoding'}\tVS\t$total_SBS_coding\n"; exit; }
+  		else { print STDERR "Error in the calculation of the total number of SBS on the coding strand!!!!\nFrom hash table $refH_file->{$k_file}{'TotalSBSCoding'}\tVS\t$total_SBS_coding\n"; exit 3; }
 
 
   		my $totalP_SBS_coding = $percent_ca_NonTr + $percent_ca_Tr + $percent_cg_NonTr + $percent_cg_Tr + $percent_ct_NonTr + $percent_ct_Tr + $percent_ta_NonTr + $percent_ta_Tr + $percent_tc_NonTr + $percent_tc_Tr + $percent_tg_NonTr + $percent_tg_Tr; $totalP_SBS_coding = sprintf("%.0f", $totalP_SBS_coding);
-  		if($totalP_SBS_coding != 100) { print STDERR "The percentages for the trinucleotide sequence context on the coding strand for 12 mutation types is not equal to 100!!!\n$totalP_SBS_coding\n"; exit; }
+  		if($totalP_SBS_coding != 100) { print STDERR "The percentages for the trinucleotide sequence context on the coding strand for 12 mutation types is not equal to 100!!!\n$totalP_SBS_coding\n"; exit 3; }
 
 
   		###########################################################################################################################################################
@@ -2322,7 +2322,7 @@ sub ReportMutDist
 		my ($refH_file, $folderChi2) = @_;
 
 		# No value for the chi2
-		if(scalar (keys $refH_file) == 0) { print STDERR "No value for calculating the chi2 for the strand bias\n"; exit; }
+		if(scalar (keys $refH_file) == 0) { print STDERR "No value for calculating the chi2 for the strand bias\n"; exit 3; }
 
 		# Strand bias for one mutation type for all the samples
 		my %h_tempchi2 = ();
@@ -3042,7 +3042,7 @@ sub recoverNumCol
   {
     if($tab_search_header[$i] eq $name_of_column) { $name_of_column_NB = $i; last; }
   }
-  if($name_of_column_NB eq "toto") { print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
+  if($name_of_column_NB eq "toto") { print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit 3; }
   else                             { return $name_of_column_NB; }
 }
 

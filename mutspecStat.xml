@@ -60,6 +60,8 @@
            source="both"
            level="warning"
            description="FutureWarning" />
+    <exit_code range="2"   level="fatal"   description="Empty arguments" />
+    <exit_code range="3"   level="fatal"   description="" />
 </stdio>
 
 <help>
