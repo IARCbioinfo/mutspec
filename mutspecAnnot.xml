@@ -72,7 +72,10 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 **mutect** :     contig position ref_allele alt_allele
 
-**vcf** :        CHROM POS REF ALT
+**vcf** :        version `4.1`__ and `4.2`__
+
+.. __: https://samtools.github.io/hts-specs/VCFv4.1.pdf
+.. __: https://samtools.github.io/hts-specs/VCFv4.2.pdf
 
 **cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
 
