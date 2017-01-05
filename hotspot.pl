@@ -83,8 +83,9 @@ sub do_help {
 	HOTSPOT tool :
 The goal of this tool is to compute variant frequency in a define datasets.
 If information provided on duplicate sample, infers somatics status of the variants in this dataset.
+!!	A value for all the differents options is needed.	!!
 
-	Option -i : INPUT : tabular file with sample name
+	Option -i : INPUT : tabular file with sample name (or \"None\" if not provided)
 	Option -d : INPUT : directory name where VCF/tabular file are located
 	Option -o : OUTPUT: directory name
 	Option -s : OUTPUT: directory name for variant_summary
