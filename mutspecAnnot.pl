@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 28/10/16             #
+# Last update: 12/01/17             #
 #-----------------------------------#
 
 use strict;
@@ -324,18 +324,19 @@ sub RecoverColNameAuto
 	$header      =~ s/[\r\n]+$//;
 
 	## Name of the columns
-	my @mutect     = qw(contig position ref_allele alt_allele);
-	my @vcf        = qw(CHROM POS REF ALT);
-	my @cosmic     = qw(Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic);
-	my @icgc       = qw(chromosome chromosome_start reference_genome_allele mutated_to_allele);
-	my @tcga       = qw(Chromosome Start_position Reference_Allele Tumor_Seq_Allele2);
-	my @ionTorrent = qw(chr Position Ref Alt);
-	my @proton     = qw(Chrom Position Ref Variant);
-	my @varScan2   = qw(Chrom Position Ref VarAllele);
-	my @annovar    = qw(Chr Start Ref Obs);
-	my @custom     = qw(Chromosome Start Wild_Type Mutant);
+	my @mutect           = qw(contig position ref_allele alt_allele);
+	my @vcf              = qw(CHROM POS REF ALT);
+	my @cosmic           = qw(Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic);
+	my @icgc             = qw(chromosome chromosome_start reference_genome_allele mutated_to_allele);
+	my @tcga             = qw(Chromosome Start_position Reference_Allele Tumor_Seq_Allele2);
+	my @ionTorrent       = qw(chr Position Ref Alt);
+	my @proton           = qw(Chrom Position Ref Variant);
+	my @varScan2         = qw(Chrom Position Ref VarAllele);
+	my @varScan2_somatic = qw(chrom position ref var);
+	my @annovar          = qw(Chr Start Ref Obs);
+	my @custom           = qw(Chromosome Start Wild_Type Mutant);
 
-	my @allTab = (\@mutect, \@vcf, \@cosmic, \@icgc, \@tcga, \@ionTorrent, \@proton, \@varScan2, \@annovar, \@custom);
+	my @allTab = (\@mutect, \@vcf, \@cosmic, \@icgc, \@tcga, \@ionTorrent, \@proton, \@varScan2, \@varScan2_somatic, \@annovar, \@custom);
 	my $timer  = 0; # For controlling if the names are present on the dictionnary or not
 
 	foreach my $refTab (@allTab)
