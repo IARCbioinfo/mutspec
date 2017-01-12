@@ -89,6 +89,8 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 **varScan2** :   Chrom Position Ref VarAllele
 
+**varScan2 somatic** :   chrom position ref var
+
 **annovar** :    Chr Start Ref Obs                 
 
 **custom** :     Chromosome Start Wild_Type Mutant
