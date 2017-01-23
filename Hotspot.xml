@@ -24,7 +24,7 @@ sh \$SCRIPT_PATH/hotspotconfig.sh in output outputsummary $infofile $pair
 <inputs>
 <param name="dataset_list" type="data_collection" format="tabular" collection_type="list" label="Dataset List" optional="false" help="Select a dataset list/collection from your history" />
 <param name="infofile" type="data" optional="true" format="tabular" label="InfoFile containing input file name." help="See the documentation to format it correctly." />
-<param type="boolean" name="pair" checked="TRUE" truevalue="pair" falsevalue="nopair" label="Tumor-Normal(-Replicates) paired analysis? - If yes, you must provide an InfoFile with Normal-Tumor(-Replicates)." help="For additional annotation on germline or somatic variant status (see Figure 3)" />
+<param type="boolean" name="pair" checked="TRUE" truevalue="Y" falsevalue="N" label="Tumor-Normal(-Replicates) paired analysis? - If yes, you must provide an InfoFile with Normal-Tumor(-Replicates)." help="For additional annotation on germline or somatic variant status (see Figure 3)" />
 </inputs>
 
 <outputs>
