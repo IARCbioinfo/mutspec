@@ -1,10 +1,12 @@
 #/usr/bin/perl
 
 #	~~~~	HOTSPOT tool	~~~~
-#	13/06/2016
+#	Creation date : 13/06/2016
+#	Last modification : 23/01/2017
 #	Alexis ROBITAILLE
 #	robitaillea@students.iarc.fr
 #	Version : 1.0
+#	International Agency for Research on Cancer (Lyon, France)
 
 #################
 #				#
@@ -68,6 +70,11 @@ else {
 	exit;
 }
 if ( defined( $opts{p} ) ) {
+	if($opts{p}!~/^Y$/i && $opts{p}!~/^N$/i){
+		print "Err : Please enter a correct value for option -p\n";
+		do_help();
+		exit;
+	}
 	#print "-p $opts{p}\n";
 }
 else {
@@ -141,7 +148,7 @@ my %acceptedformat=(
 $InfoFile=$opts{i};						#Get the path to InfoFile
 
 if($InfoFile eq "None"){
-	if($opts{p} eq "pair"){
+	if($opts{p} eq "Y"){
 		print "Program STOP - You have to provide an InfoFile if you want to do a paired analysis\n";
 		exit;
 	}
@@ -241,12 +248,12 @@ foreach my $format (@filesformat){
 #	Get all the variant one time only in a table	#
 #####################################################
 my @uniquevariant;				#Table for store all the variants in an uniqu way
-my @uniquevariant2;				#Table for store all the variants in an uniqu way, the one with chr_random...
+my @uniquevariant2;				#Table for store all the variants in an uniqu way, the one with chrX, chr_random...
 my %uniqueline;					#line choose from a random file for a variant
 foreach my $name (keys %h){
 	foreach my $var (@{$h{$name}}){
 		$uniqueline{$var}=$hline{$name.$var};
-		if (!(grep {$_ eq $var} @uniquevariant)){
+		if ((!(grep {$_ eq $var} @uniquevariant)) && (!(grep {$_ eq $var} @uniquevariant2))){
 			my @tmp=split('\|',$var);
 			if($tmp[0]=~/chr\d+$/){
 				push(@uniquevariant,$var);
@@ -273,14 +280,14 @@ if($type ne "SIMPLE"){
 }
 
 
-if($opts{p} eq "pair"){
+if($opts{p} eq "Y"){
 	my @field=split("\t",$headInfoFile);
 	if($field[0]!~/^Normal$/){
 		print "Err : You must provide an InfoFile with first column name \"Normal\" if you want to do a paired analysis\n";
 		exit;
 	}
 	elsif($#field>2){
-		print "Err : You can't have more than 3 column (Normal, Tumor and Duplicates) if ou want to do a paired analysis\n";
+		print "Err : You can't have more than 3 column (Normal, Tumor and Duplicates) if you want to do a paired analysis\n";
 		exit;
 	}
 }
@@ -317,7 +324,7 @@ sub HotSpotv{
 		}
 	}
 	else{
-		if($opts{p} eq "pair"){												#Case Normal-Tumor-Duplicates
+		if($opts{p} eq "Y"){												#Case Normal-Tumor-Duplicates
 			my @header=split("\t",$headInfoFile);				#split the header of the InfoFile to have the categories name
 			foreach my $cate (keys %$cat){						#Foreach categorie describe in InfoFile
 				foreach my $name (@{$$cat{$cate}}){				#For each sample of this category
@@ -408,7 +415,7 @@ chdir($opts{s}) or die("Erreur chdir pour aller dans le répertoire $opts{s} \n"
 open(OUT, ">"."variants_summary.vcf") or die ("Unable to open output writing file variants_summary.vcf");
 print OUT $headfinal."\n";
 my %varsampleannotation;						#HASH K=var, V=information of the frequency of this variants in the differents categories
-my @uniquevariantsort= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @uniquevariant;
+my @uniquevariantsort= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @uniquevariant;
 push(@uniquevariantsort,@uniquevariant2);
 foreach my $var (@uniquevariantsort){					#Foreach variants
 	my $aecrire="";									#annotation on frequency
@@ -575,7 +582,7 @@ foreach my $n (keys %h){				#Foreach sample
 				push(@temp2,$tmp);
 			}
 		}							#It permit to class them by chromosome number without having warnings
-		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @temp;
+		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @temp;
 		push(@sortvar,@temp2);
 		foreach my $var (@sortvar){
 			print OUT $hline{$n.$var}.$varsampleannotation{$var}."\n";
@@ -594,7 +601,7 @@ foreach my $n (keys %h){				#Foreach sample
 				push(@temp2,$tmp);
 			}
 		}							#It permit to class them by chromosome number without having warnings
-		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @temp;
+		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @temp;
 		push(@sortvar,@temp2);
 		foreach my $var (@sortvar){
 			my $individu="";
