@@ -44,10 +44,10 @@
         </when>
     </conditional>    
 
-    <param name="segDup" type="boolean" checked="true" truevalue="--segDup" falsevalue="" label="Filter against SegDup database" help="Remove variants present at &#62;= 0.9 frequency in the genomic duplicate segments database" />
-    <param name="esp" type="boolean" checked="true" truevalue="--esp" falsevalue="" label="Filter against the ESP database" help="Remove variants present at frequency &#62; 0.001 in the Exome Sequencing Project database (only valid for human genomes)" />
-    <param name="thG" type="boolean" checked="true" truevalue="--thG" falsevalue="" label="Filter against the 1000g database project" help="Remove variants present at frequency &#62; 0.001 in the 1000 genome database (only valid for human genomes)" />
-    <param name="exac" type="boolean" checked="true" truevalue="--exac" falsevalue="" label="Filter against the ExAC database" help="Remove variants present at frequency &#62; 0.001 in the EXome Agregate Consortium database (only valid for human genomes)" />
+    <param name="segDup" type="boolean" checked="true" truevalue="--segDup" falsevalue="" label="Filter against SegDup database" help="Remove variants present at &#62;= 0.9 frequency in the genomic duplicate segments database (Use only for human and mouse genomes)" />
+    <param name="esp" type="boolean" checked="true" truevalue="--esp" falsevalue="" label="Filter against the ESP database" help="Remove variants present at frequency &#62; 0.001 in the Exome Sequencing Project database (Use only for human genome)" />
+    <param name="thG" type="boolean" checked="true" truevalue="--thG" falsevalue="" label="Filter against the 1000g database project" help="Remove variants present at frequency &#62; 0.001 in the 1000 genome database (Use only for human genome)" />
+    <param name="exac" type="boolean" checked="true" truevalue="--exac" falsevalue="" label="Filter against the ExAC database" help="Remove variants present at frequency &#62; 0.001 in the EXome Agregate Consortium database (Use only for human genome)" />
     
     <repeat name="filters" title="Additional filters">
     	<param name="reference" type="data" format="bed" label="Reference file (bed or vcf)" help="Remove variants present in the reference file"/>
@@ -60,8 +60,8 @@
 </outputs>
 
 <stdio>
-    <exit_code range="2"   level="fatal"   description="No databases selected" />
-    <exit_code range="3"   level="fatal"   description="" />
+    <regex match="Error message:"     source="stderr" level="fatal"   description="Read error message for more details" />
+    <regex match="Warning message:"   source="stdout" level="warning" description="" />
 </stdio>
 
 <help>
@@ -72,7 +72,11 @@ Filter a file annotated with MutSpec-Annot tool. Variants present in public data
 
 .. class:: warningmark
 
-The databases ESP, 1000 genome and ExAC can be used only for human genomes
+The database genomic duplicate segments can be used only for human and mouse genomes
+
+.. class:: warningmark
+
+The databases ESP, 1000 genome and ExAC can be used only for human genome
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
