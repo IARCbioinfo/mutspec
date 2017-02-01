@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 12/01/17             #
+# Last update: 01/02/17             #
 #-----------------------------------#
 
 use strict;
@@ -41,12 +41,13 @@ pod2usage(-verbose=>0, -exitval=>1, -output=>\*STDERR) if(@ARGV == 2); # Only on
 our $max_cpu = 12; # Max number of CPU to use for the annotation
 
 
+
+
 # Recover the current path
 our $pwd = `pwd`;
 chomp($pwd);
-
-# Input file path
-our @pathInput = split("/", $input);
+# Recover the filename and the input directory
+our ($filename, $directories, $suffix)    = fileparse($input, qr/\.[^.]*/);
 # Output directories
 our ($folderMutAnalysis, $folderAnnovar) = ("", "");
 # File with the list of Annovar databases to use
@@ -55,13 +56,17 @@ our $listAVDB = "";
 our ($chrValue, $positionValue, $refValue, $altValue) = ("c", "s", "r", "a");
 
 
+
 ######################################################################################################################################################
 #																																								MAIN 																																 #
 ######################################################################################################################################################
 ## Check the presence of the flags and create the output and temp directories
 CheckFlags();
 
-## Format the file in the correct format if they are vcf or MuTect output and recover the column positions
+## Format the file correctly:
+##			1) Check the length of the filename (must be <= 31 characters)
+##			2) Recover the input format. If MuTect output consider only "KEEP" variants
+##			3) Recover the column number for chr, start, ref and alt
 FormatingInputFile();
 
 # Annotate the file with Annovar, add the strand orientation and the sequence context
@@ -75,15 +80,24 @@ FullAnnotation();
 sub CheckFlags
 {
 	# Check the reference genome
-	if($refGenome eq "empty")   { print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n"; exit 2; }
-	if($intervalEnd eq "empty") { print STDERR "You forget to specify the length for the sequence context!!!\nPlease specify it with the flag --intervalEnd\n"; exit 2; }
+	if($refGenome eq "empty")
+	{
+		print STDERR "Missing flag !\n";
+		print STDERR "You forget to specify the name for the reference genome!!!\nPlease specify it with the flag --refGenome\n";
+		exit;
+	}
+	if($intervalEnd eq "empty")
+	{
+		print STDERR "Missing flag !\n";
+		print STDERR "You forget to specify the length for the sequence context!!!\nPlease specify it with the flag --intervalEnd\n";
+		exit;
+	}
 	# If no output is specified write the result as the same place as the input file
 	if($output eq "empty")
 	{
-		my $folderRes         = "";
-		for(my $i=0; $i<$#pathInput; $i++) { $folderRes .= "$pathInput[$i]/"; }
+		my $directory = dirname( $directories );
 
-		$folderMutAnalysis = "$folderRes/Mutational_Analysis";
+		$folderMutAnalysis = "$directory/Mutational_Analysis";
 		if(!-e $folderMutAnalysis) { mkdir($folderMutAnalysis) or die "$!: $folderMutAnalysis\n"; }
 	}
 	else
@@ -98,15 +112,29 @@ sub CheckFlags
 	if(!-e $folderAnnovar) { mkdir($folderAnnovar) or die "$!: $folderAnnovar\n"; }
 
 	# Verify the access to Annovar databases
-	if($path_AVDB eq "empty") { print STDERR "You forget to specify the path to Annovar databases!!!\nPlease specify it with the flag --pathAnnovarDB\n"; exit 2; }
-	elsif(!-e $path_AVDB) { print STDERR"\nCan't access Annovar databases!\nPlease check the access to the disk\n"; exit 3; }
+	if($path_AVDB eq "empty")
+	{
+		print STDERR "Missing flag !\n";
+		print STDERR "You forget to specify the path to Annovar databases!!!\nPlease specify it with the flag --pathAnnovarDB\n";
+		exit;
+	}
+	elsif(!-e $path_AVDB)
+	{
+		print STDERR "Error message:\n";
+		print STDERR"\nCan't access Annovar databases!\nPlease check the access to the disk\n";
+	}
 
 	# Check the file list AV DB
-	if($pathAVDBList eq "empty") { print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n"; exit 2; }
+	if($pathAVDBList eq "empty")
+	{
+		print STDERR "Missing flag !\n";
+		print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n";
+		exit;
+	}
 	else { $listAVDB = "$pathAVDBList/${refGenome}_listAVDB.txt" }
 
 	# If no temp folder is specified write the result in the current path
-	if($folder_temp eq "empty") { $folder_temp   = "$pwd/TEMP_MutationalAnalysis_$pathInput[$#pathInput]"; }
+	if($folder_temp eq "empty") { $folder_temp   = "$pwd/TEMP_MutationalAnalysis_$filename"; }
 	if(!-e $folder_temp)        { mkdir($folder_temp) or die "$!: $folder_temp\n"; }
 }
 
@@ -120,7 +148,6 @@ sub FormatingInputFile
 		{
 			my $headerOriginalFile = "";
 			chomp($file);
-			my ($filename, $directories, $suffix) = fileparse("$input/$file", qr/\.[^.]*/);
 
 			CheckLengthFilename("$input/$file");
 
@@ -136,7 +163,6 @@ sub FormatingInputFile
 		my $headerOriginalFile = "";
 
 		CheckLengthFilename($input);
-		my ($filename, $directories, $suffix) = fileparse($input, qr/\.[^.]*/);
 
 		#################################################
 		###						Recover the input format 				###
@@ -150,13 +176,16 @@ sub CheckLengthFilename
 {
 	my ($inputFile) = @_;
 
-	## Verify the name of file, must be <= 31 chars for the sheet name
-	my ($filename, $directories, $suffix) = fileparse($inputFile, qr/\.[^.]*/);
+	my ($filenameInputFile, $directoriesInputFile, $suffixInputFile) = fileparse($inputFile, qr/\.[^.]*/);
 
-	if(length($filename) > 32) { print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n"; exit 4; }
+	if(length($filenameInputFile) > 32)
+	{
+		print STDERR "Error message:\n";
+		print STDERR "The file: $inputFile must be <= 31 chars\nPlease modify it before running the script\n";
+	}
 }
 
-# Recover the input format (vcf or txt) and depending on the format convert the input file in a suitable format for Annovar (ex: for MuTect files keep only the confident variants)
+# Recover the input format. If MuTect output consider only "KEEP" variants
 sub RecoverInputFormat
 {
 	my ($file, $refS_headerOriginalFile) = @_;
@@ -321,7 +350,7 @@ sub RecoverColNameAuto
 {
 	our ($inputFile, $header, $ref_chrValue, $ref_positionValue, $ref_refValue, $ref_altValue) = @_;
 
-	$header      =~ s/[\r\n]+$//;
+	$header =~ s/[\r\n]+$//;
 
 	## Name of the columns
 	my @mutect           = qw(contig position ref_allele alt_allele);
@@ -353,9 +382,10 @@ sub RecoverColNameAuto
 
 	if($timer == scalar(@allTab))
 	{
+		print STDERR "Error message:\n";
 		print STDERR "The columns name are not in the dictionnary please change them before running the tool again\nFile concerning: $inputFile\n";
 		print STDERR "TIP: Use one of the columns names proposed in the section Input formats of the tool\n";
-		exit 4;
+		exit;
 	}
 
 	# Extract the number of the column that contain the information
@@ -405,7 +435,7 @@ sub FullAnnotation
 			chomp($file);
 
 			# For recover the name of the file without extension, the directory where the file is and the extension of the file
-			my ($filename, $directories, $suffix)    = fileparse("$folder_temp/$file", qr/\.[^.]*/);
+			my ($filename, $directories, $suffix) = fileparse("$folder_temp/$file", qr/\.[^.]*/);
 			my $filenameOK = "";
 			# For removing the ColumnCorrect for txt files
 			if($filename =~ /(.+)-ColumnCorrect/)
@@ -413,277 +443,197 @@ sub FullAnnotation
 				if($filename =~ /(.+)-VariantListVCF-ColumnCorrect/) { $filenameOK = $1; }
 				else { $filenameOK = $1; }
 			}
-			else { print STDERR "Case not considered for $filename!!!\n"; exit 4; }
+			else { print STDERR "Error message:\n"; print STDERR "Case not considered for $filename!!!\n"; }
 
 
 			#################################################
 			###						 Cut the files in n part  		  ###
 			#################################################
-			# Recover the number of variants in the file for deciding the number of CPU to use
+			# Cut the file in n part depending on the number of lines and set the number of CPU to use for the annotation depending of the number of n parts
 			my $cpu = 0;
-			my $nbVariants = `wc -l $file`;
-			$nbVariants =~ /(\d+).+/;
-			my $nbLine  = $1;
+			# Keep the original header
+			my $headerOriginalFile = "";
+			# Save the numer of lines
+			my $nbLine  = 0;
+			splitInputFile($file, \$cpu, \$headerOriginalFile, $filenameOK, \$nbLine);
 
-			if($nbLine-1 <= 5000)      { $cpu = 1; }
-			elsif( ($nbLine-1 > 5000) && ($nbLine-1 < 25000) )    { $cpu = 2; }
-			elsif( ($nbLine-1 >= 25000) && ($nbLine-1 < 100000) ) { $cpu = 8; }
-			else { $cpu = $max_cpu; }
-
-			# If the number predefined can't be used on the machine use the maximum number specify by the administrator
-			if($cpu > $max_cpu) { $cpu = $max_cpu }
-
-			## Recover the header
-			open(F1, $file) or die "$!: $file\n";
-			my $headerOriginalFile = <F1>;
-			close F1;
-
-			## Remove the first line of the file
-			my $fileNoHeader = "$folder_temp/${filenameOK}-NoHeader";
-			`sed 1d $file > $fileNoHeader`;
-
-			if(!-e "$folder_temp/$filenameOK") { mkdir("$folder_temp/$filenameOK") or die "Can't create the directory $folder_temp/$filenameOK\n"; }
-			my $lines_per_temp = int(1+($1 / $cpu)); # +1 in case of the div == 0
-			`split -l $lines_per_temp $fileNoHeader $folder_temp/$filenameOK/$filenameOK-`;
-
-			if($headerOriginalFile eq "") { print STDERR "No header for the file $file!!!\nPlease check the format of your file\n"; exit 4; }
-			my @files = <$folder_temp/$filenameOK/$filenameOK-*>;
 
 			#################################################
 			###							Annotate the n part  		 		  ###
 			#################################################
-			my $pm = Parallel::ForkManager->new($cpu);
-
-			foreach my $tempFile (@files)
-			{
-				# Forks and returns the pid for the child:
-			 	my $pid = $pm->start and next;
-
-			 	# Convert the file in a correct format for Annovar: Chr Start End Ref Alt Otherinfo
-			 	my ($filename, $directories, $suffix) = fileparse($tempFile, qr/\-[^.]*/);
-				my $outFilenameTemp = $filename.$suffix;
-				Convert2AV($tempFile, $chrValue, $positionValue, $refValue, $altValue, "$folder_temp/$outFilenameTemp-AVInput");
-
-				# Annotate the file with Annovar
-				my $tempFileName_AVOutput = $filename.$suffix.".".${refGenome}."_multianno.txt";
-				if($fullAVDB eq "yes") { AnnotateAV("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
-				else { annotateAV_min("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
-
-				# Check if the annotations worked
-				open(F1, "$folderMutAnalysis/log_annovar.txt") or die "$!: $folderMutAnalysis/log_annovar.txt\n";
-				while(<F1>)
-				{
-					if($_ =~ /ERROR/i)
-					{
-						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
-						print STDERR $_;
-						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
-						exit 5;
-					}
-				}
-				close F1;
-
-				# Recover the strand orientation
-				my $length_AVheader = 0;
-				RecoverStrand("$folder_temp/$tempFileName_AVOutput", $headerOriginalFile, $path_AVDB, $refGenome, "$folder_temp/$outFilenameTemp-Strand", \$length_AVheader);
-
-				# Recover the sequence context
-				RecoverGenomicSequence("$folder_temp/$outFilenameTemp-Strand", $length_AVheader, $intervalEnd, $refGenome, $path_AVDB, "$folder_temp/$filenameOK/$outFilenameTemp".".".${refGenome}."_multianno.txt");
-
-				$pm->finish; # Terminates the child process
-			}
-			# Wait all the child process
-			$pm->wait_all_children;
-
+			annotateFile($cpu, $filenameOK, $headerOriginalFile);
 
 
 			#################################################
 			###					Paste the file together 		 		  ###
 			#################################################
-			## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy when using "collection".
-			if($nbLine == 1)
-			{
-				print STDOUT "\nThe sample $filenameOK didn't pass MuTect filters\n";
-
-				### Print Annovar minimal header + the original header of the input file
-				my $outputFile = "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt";
-				open(OUT, ">", $outputFile) or die "$!: $outputFile\n";
-
-				if($fullAVDB eq "no")
-				{
-					print OUT "Chr\tStart\tEnd\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tStrand\tcontext";
-					print OUT "\t".$headerOriginalFile;
-				}
-				### Print complete Annovar header (using the database name present in the file listAVDB) + the original header of the input file
-				else
-				{
-					print OUT "Chr\tStart\tEnd\tRef\tAlt";
-					open(F1, $listAVDB) or die "$!: $listAVDB\n";
-					while(<F1>)
-					{
-						if($_ =~ /^#/) { next; }
-
-						my @tab = split("\t", $_);
-						$tab[0] =~ /$refGenome\_(.+)\.txt/;
-						my $dbName = $1;
-
-						if($dbName =~ /refGene|knownGene|ensGene/)
-						{
-							print OUT "\t"."Func.$dbName\tGene.$dbName\tGeneDetail.$dbName\tExonicFunc.$dbName\tAAChange.$dbName";
-						}
-						else
-						{
-							print OUT "\t".$dbName;
-						}
-					}
-					print OUT "\tStrand\tcontext\t".$headerOriginalFile;
-
-					close F1;
-				}
-				close OUT;
-			}
-			else
-			{
-				CombinedTempFile("$folder_temp/$filenameOK", "$folderAnnovar/$filenameOK".".".${refGenome}."_multianno.txt");
-			}
+			createOutput($filenameOK, $headerOriginalFile, $nbLine);
 		}
 	}
 	# The input file is one file
 	else
 	{
-		my ($filenameO, $directoriesO, $suffixO) = fileparse($input, qr/\.[^.]*/);
-
 		#################################################
 		###						 Cut the files in n part  		  ###
 		#################################################
-		# Recover the number of variants in the file for deciding the number of CPU to use
+		# Cut the file in n part depending on the number of lines and set the number of CPU to use for the annotation depending of the number of n parts
 		my $cpu = 0;
-		my $nbVariants = `wc -l $folder_temp/$filenameO-ColumnCorrect.txt`;
-		$nbVariants =~ /(\d+).+/;
-		my $nbLine  = $1;
+		# Keep the original header
+		my $headerOriginalFile = "";
+		# Save the numer of lines
+		my $nbLine  = 0;
+		splitInputFile("$folder_temp/$filename-ColumnCorrect.txt", \$cpu, \$headerOriginalFile, $filename, \$nbLine);
 
-		if($nbLine-1 <= 5000)      { $cpu = 1; }
-		elsif( ($nbLine-1 > 5000) && ($nbLine-1 < 25000) )    { $cpu = 2; }
-		elsif( ($nbLine-1 >= 25000) && ($nbLine-1 < 100000) ) { $cpu = 8; }
-		else { $cpu = $max_cpu; }
-
-		# If the number predefined can't be used on the machine use the maximum number specify by the administrator
-		if($cpu > $max_cpu) { $cpu = $max_cpu }
-
-		## Recover the header
-		open(F1, "$folder_temp/$filenameO-ColumnCorrect.txt") or die "$!: $folder_temp/$filenameO-ColumnCorrect.txt\n";
-		my $headerOriginalFile = <F1>;
-		close F1;
-
-		## Remove the first line of the file
-		my $fileNoHeader = "$folder_temp/$filenameO-NoHeader";
-		`sed 1d $folder_temp/$filenameO-ColumnCorrect.txt > $fileNoHeader`;
-
-		if(!-e "$folder_temp/$filenameO") { mkdir("$folder_temp/$filenameO") or die "Can't create the directory $folder_temp/$filenameO\n"; }
-		my $lines_per_temp = int(1+($1 / $cpu)); # +1 in case of the div == 0
-		`split -l $lines_per_temp $fileNoHeader $folder_temp/$filenameO/$filenameO-`;
-
-		if($headerOriginalFile eq "") { print STDERR "No header for the file $input!!!\nPlease check the format of your file\n"; exit 4; }
-		my @files = <$folder_temp/$filenameO/$filenameO-*>;
 
 		#################################################
 		###							Annotate the n part  		 		  ###
 		#################################################
-		my $pm = Parallel::ForkManager->new($cpu);
-		foreach my $tempFile (@files)
-		{
-			# Forks and returns the pid for the child:
-			my $pid = $pm->start and next;
+		annotateFile($cpu, $filename, $headerOriginalFile);
 
-			# Convert the file in a correct format for Annovar: Chr Start End Ref Alt Otherinfo
-			# For recover the name of the file without extension, the directory were the file is and the extension of the file
-			my ($filename, $directories, $suffix) = fileparse($tempFile, qr/\.[^.]*/);
-			my $outFilenameTemp = $filename.$suffix;
-			Convert2AV($tempFile, $chrValue, $positionValue, $refValue, $altValue, "$folder_temp/$outFilenameTemp-AVInput");
-
-			# Annotate the file with Annovar
-			my $tempFileName_AVOutput = $outFilenameTemp.".".${refGenome}."_multianno.txt";
-			if($fullAVDB eq "yes") { AnnotateAV("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
-			else { annotateAV_min("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
-
-			# Check if the annotations worked
-				open(F1, "$folderMutAnalysis/log_annovar.txt") or die "$!: $folderMutAnalysis/log_annovar.txt\n";
-				while(<F1>)
-				{
-					if($_ =~ /ERROR/i)
-					{
-						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
-						print STDERR $_;
-						print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
-						exit 5;
-					}
-				}
-				close F1;
-
-			# Recover the strand orientation
-			my $length_AVheader = 0;
-			RecoverStrand("$folder_temp/$tempFileName_AVOutput",  $headerOriginalFile, $path_AVDB, $refGenome, "$folder_temp/$outFilenameTemp-Strand", \$length_AVheader);
-
-			# Recover the sequence context
-			RecoverGenomicSequence("$folder_temp/$outFilenameTemp-Strand", $length_AVheader, $intervalEnd, $refGenome, $path_AVDB, "$folder_temp/$filenameO/$tempFileName_AVOutput");
-
-			$pm->finish; # Terminates the child process
-		}
-		# Wait all the child process
-		$pm->wait_all_children;
 
 		#################################################
 		###					Paste the file together 		 		  ###
 		#################################################
-		## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making an error in Galaxy for the next tool when using "Collection".
-		if($nbLine == 1)
-		{
-			print STDOUT "\nThe sample $filenameO didn't pass MuTect filters\n";
-
-			### Print Annovar minimal header + the original header of the input file
-			my $outputFile = "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt";
-			open(OUT, ">", $outputFile) or die "$!: $outputFile\n";
-
-			if($fullAVDB eq "no")
-			{
-				print OUT "Chr\tStart\tEnd\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tStrand\tcontext";
-				print OUT "\t".$headerOriginalFile;
-			}
-			### Print complete Annovar header (using the database name present in the file listAVDB) + the original header of the input file
-			else
-			{
-				print OUT "Chr\tStart\tEnd\tRef\tAlt";
-				open(F1, $listAVDB) or die "$!: $listAVDB\n";
-				while(<F1>)
-				{
-					if($_ =~ /^#/) { next; }
-
-					my @tab = split("\t", $_);
-					$tab[0] =~ /$refGenome\_(.+)\.txt/;
-					my $dbName = $1;
-
-					if($dbName =~ /refGene|knownGene|ensGene/)
-					{
-						print OUT "\t"."Func.$dbName\tGene.$dbName\tGeneDetail.$dbName\tExonicFunc.$dbName\tAAChange.$dbName";
-					}
-					else
-					{
-						print OUT "\t".$dbName;
-					}
-				}
-				print OUT "\tStrand\tcontext\t".$headerOriginalFile;
-
-				close F1;
-			}
-			close OUT;
-		}
-		else
-		{
-			CombinedTempFile("$folder_temp/$filenameO", "$folderAnnovar/$filenameO".".".${refGenome}."_multianno.txt");
-		}
+		createOutput($filename, $headerOriginalFile, $nbLine);
 	}
 	# Remove the temporary directory
 	rmtree($folder_temp);
+}
+
+
+
+sub splitInputFile
+{
+	my ($inputFile, $ref_cpu, $ref_header, $filename, $ref_nbLine) = @_;
+
+	my $nbVariants = `wc -l $inputFile`;
+	$nbVariants =~ /(\d+).+/;
+	$$ref_nbLine  = $1;
+
+	if($$ref_nbLine-1 <= 5000)      { $$ref_cpu = 1; }
+	elsif( ($$ref_nbLine-1 > 5000) && ($$ref_nbLine-1 < 25000) )    { $$ref_cpu = 2; }
+	elsif( ($$ref_nbLine-1 >= 25000) && ($$ref_nbLine-1 < 100000) ) { $$ref_cpu = 8; }
+	else { $$ref_cpu = $max_cpu; }
+
+	# If the number predefined can't be used on the machine use the maximum number specify by the administrator
+	if($$ref_cpu > $max_cpu) { $$ref_cpu = $max_cpu }
+
+
+	## Recover the header
+	open(F1, $inputFile) or die "$!: $inputFile\n";
+	$$ref_header= <F1>;
+	close F1;
+
+	## Remove the first line of the file
+	my $fileNoHeader = "$folder_temp/${filename}-NoHeader";
+	`sed 1d $inputFile > $fileNoHeader`;
+
+	if(!-e "$folder_temp/$filename") { mkdir("$folder_temp/$filename") or die "Can't create the directory $folder_temp/$filename\n"; }
+	my $lines_per_temp = int(1+($1 / $$ref_cpu)); # +1 in case of the div == 0
+	`split -l $lines_per_temp $fileNoHeader $folder_temp/$filename/$filename-`;
+
+	if($$ref_header eq "") { print STDERR "Error message:\n"; print STDERR "No header for the file $inputFile!!!\nPlease check the format of your file\n"; }
+}
+
+sub annotateFile
+{
+	my ($cpu, $filename, $headerOriginalFile) = @_;
+
+	my $pm = Parallel::ForkManager->new($cpu);
+
+	foreach my $tempFile (`ls $folder_temp/$filename/$filename-*`)
+	{
+		chomp($tempFile);
+
+		# Forks and returns the pid for the child:
+	 	my $pid = $pm->start and next;
+
+		# Convert the file in a correct format for Annovar: Chr Start End Ref Alt Otherinfo
+		my ($filenameTempFile, $directoriesTempFile, $suffixTempFile) = fileparse($tempFile, qr/\-[^.]*/);
+		my $outFilenameTemp = $filenameTempFile.$suffixTempFile;
+		Convert2AV($tempFile, $chrValue, $positionValue, $refValue, $altValue, "$folder_temp/$outFilenameTemp-AVInput");
+
+		# Annotate the file with Annovar
+		my $tempFileName_AVOutput = $filename.$suffixTempFile.".".${refGenome}."_multianno.txt";
+		if($fullAVDB eq "yes") { AnnotateAV("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
+		else { annotateAV_min("$folder_temp/$outFilenameTemp-AVInput", "$folder_temp/$outFilenameTemp"); }
+
+		# Check if the annotations worked
+		open(F1, "$folderMutAnalysis/log_annovar.txt") or die "$!: $folderMutAnalysis/log_annovar.txt\n";
+		while(<F1>)
+		{
+			if($_ =~ /ERROR/i)
+			{
+				print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n";
+				print STDERR $_;
+				print STDERR "\n\n\t\tANNOVAR LOG FILE\n\n\n";
+			}
+		}
+		close F1;
+
+		# Recover the strand orientation
+		my $length_AVheader = 0;
+		RecoverStrand("$folder_temp/$tempFileName_AVOutput", $headerOriginalFile, $path_AVDB, $refGenome, "$folder_temp/$outFilenameTemp-Strand", \$length_AVheader);
+
+		# Recover the sequence context
+		RecoverGenomicSequence("$folder_temp/$outFilenameTemp-Strand", $length_AVheader, $intervalEnd, $refGenome, $path_AVDB, "$folder_temp/$filename/$outFilenameTemp".".".${refGenome}."_multianno.txt");
+
+		$pm->finish; # Terminates the child process
+	}
+	# Wait all the child process
+	$pm->wait_all_children;
+}
+
+sub createOutput
+{
+	my ($filename, $headerOriginalFile, $nbLine) = @_;
+
+	## For MuTect and MuTect2 calling only variants passing MuTect filters are kept and sometines there is no variant passing these filters making error in Galaxy when using "collection".
+	if($nbLine == 1)
+	{
+		print STDOUT "\nThe sample $filename didn't pass MuTect filters\n";
+
+		### Print Annovar minimal header + the original header of the input file
+		my $outputFile = "$folderAnnovar/$filename".".".${refGenome}."_multianno.txt";
+		open(OUT, ">", $outputFile) or die "$!: $outputFile\n";
+
+		if($fullAVDB eq "no")
+		{
+			print OUT "Chr\tStart\tEnd\tRef\tAlt\tFunc.refGene\tGene.refGene\tGeneDetail.refGene\tExonicFunc.refGene\tAAChange.refGene\tStrand\tcontext";
+			print OUT "\t".$headerOriginalFile;
+		}
+		### Print complete Annovar header (using the database name present in the file listAVDB) + the original header of the input file
+		else
+		{
+			print OUT "Chr\tStart\tEnd\tRef\tAlt";
+			open(F1, $listAVDB) or die "$!: $listAVDB\n";
+			while(<F1>)
+			{
+				if($_ =~ /^#/) { next; }
+
+				my @tab = split("\t", $_);
+				$tab[0] =~ /$refGenome\_(.+)\.txt/;
+				my $dbName = $1;
+
+				if($dbName =~ /refGene|knownGene|ensGene/)
+				{
+					print OUT "\t"."Func.$dbName\tGene.$dbName\tGeneDetail.$dbName\tExonicFunc.$dbName\tAAChange.$dbName";
+				}
+				else
+				{
+					print OUT "\t".$dbName;
+				}
+			}
+			print OUT "\tStrand\tcontext\t".$headerOriginalFile;
+
+			close F1;
+		}
+		close OUT;
+	}
+	else
+	{
+		CombinedTempFile("$folder_temp/$filename", "$folderAnnovar/$filename".".".${refGenome}."_multianno.txt");
+	}
 }
 
 sub Convert2AV
@@ -773,7 +723,12 @@ sub AnnotateAV
 {
 	my ($inputFile, $output) = @_;
 
-	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit 4; }
+	if(!-e $path_AVDB)
+	{
+		print STDERR "Error message:\n";
+		print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n";
+		print STDERR "Please install the database for this genome before running Annovar\n";
+	}
 
 	# Extract the name of the databases
 	my $protocol = ""; my $operation = "";
@@ -846,7 +801,12 @@ sub annotateAV_min
 {
 	my ($inputFile, $output) = @_;
 
-	if(!-e $path_AVDB) { print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n"; print STDERR "Please install the database for this genome before running Annovar\n"; exit 4; }
+	if(!-e $path_AVDB)
+	{
+		print STDERR "Error message:\n";
+		print STDERR "The Annovar database doesn't exists for the reference genome $refGenome!!!\n";
+		print STDERR "Please install the database for this genome before running Annovar\n";
+	}
 
 	# Extract the name of the databases
 	my ($protocol, $operation) = ("refGene", "g");
@@ -885,12 +845,12 @@ sub RecoverStrand
 		else { $chr = $tab[$chr_value]; }
 
 		# Verify if the element exists
-		if($chr eq "")                       { print STDERR "Error RecoverStrand: The chromosome value is nor defined for $_\n"; exit 4; }
-		if(! exists $tab[$start_value])      { print STDERR "Error RecoverStrand: The start value is nor defined for $_\n"; exit 4; }
-		if(! exists $tab[$ref_value])        { print STDERR "Error RecoverStrand: The reference value is nor defined for $_\n"; exit 4; }
-		if(! exists $tab[$alt_value])        { print STDERR "Error RecoverStrand: The alternate value is nor defined for $_\n"; exit 4; }
-		if(! exists $tab[$func_value])       { print STDERR "Error RecoverStrand: The functional value is nor defined for $_\n"; exit 4; }
-		if(! exists $tab[$geneSymbol_value]) { print STDERR "Error RecoverStrand: The gene symbol value is nor defined for $_\n"; exit 4; }
+		if($chr eq "")                       { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The chromosome value is nor defined for $_\n"; }
+		if(! exists $tab[$start_value])      { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The start value is nor defined for $_\n"; }
+		if(! exists $tab[$ref_value])        { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The reference value is nor defined for $_\n"; }
+		if(! exists $tab[$alt_value])        { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The alternate value is nor defined for $_\n"; }
+		if(! exists $tab[$func_value])       { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The functional value is nor defined for $_\n"; }
+		if(! exists $tab[$geneSymbol_value]) { print STDERR "Error message:\n"; print STDERR "Error RecoverStrand: The gene symbol value is nor defined for $_\n"; }
 
 		my $geneSymbol = "";
 		######## For the splicing annotation we separate the gene symbol from the aa change
@@ -921,7 +881,7 @@ sub RecoverStrand
 		my @tab = split("\t", $_);
 		my $strand = "";
 		$strand = $tab[$db_strandInfo_value];
-		if($strand eq "") { print STDERR "Error: the strand orientation is not specify in the database refGene\n$_\n"; exit 4; }
+		if($strand eq "") { print STDERR "Error message:\n"; print STDERR "Error: the strand orientation is not specify in the database refGene\n$_\n"; }
 		else
 		{
 			# Some genes have several strand orientation, keep the first in the database
@@ -972,7 +932,11 @@ sub RecoverStrand
 		{
 			if("$tab[5]:$tab[0]" eq $kDB)
 			{
-				if($lengthHeader != $lengthLine) { print STDERR "Error Recover Strand the length of the current line is not valid!!!!!\nExpected length: $lengthHeader\tlength of the line: $lengthLine\n$h_inputFile{$kFile}[0]\n"; exit 4; }
+				if($lengthHeader != $lengthLine)
+				{
+					print STDERR "Error message:\n";
+					print STDERR "Error Recover Strand the length of the current line is not valid!!!!!\nExpected length: $lengthHeader\tlength of the line: $lengthLine\n$h_inputFile{$kFile}[0]\n";
+				}
 
 				foreach my $line (@{$h_inputFile{$kFile}})
 				{
@@ -1069,7 +1033,7 @@ sub RecoverGenomicSequence
 		my (%seqlen, %discordlen, %badorf);	#store the length of each sequence, and the ID of sequences with discordant length, ORF contains stop codon
 		my ($count_success, @failure) = (0);
 
-		for my $curchr (sort keys $refH_allRegion)
+		for my $curchr (sort keys %{$refH_allRegion})
 		{
 			my ($seqid, $curseq) = ('', '');
 			my $fastafile        = "";
@@ -1178,14 +1142,14 @@ sub RecoverGenomicSequence
 			print OUT "$tabHeaderInput[0]";
 			my $j = 0;
 			for(my $i=1; $i<$length_AVheader+1; $i++) { print OUT "\t$tabHeaderInput[$i]"; $j=$i; }
-			print OUT "\tcontext";
+			print OUT "\tcontext\ttrinucleotide_context";
 			for(my $i=$j+1; $i<=$#tabHeaderInput; $i++) { print OUT "\t$tabHeaderInput[$i]"; }
 			print OUT "\n";
 		}
 
-		foreach my $k_hFile (sort keys $refH_InputFile)
+		foreach my $k_hFile (sort keys %{$refH_InputFile})
 		{
-			foreach my $k_allRegonSeqContext (sort keys $refH_allRegionSeqContext)
+			foreach my $k_allRegonSeqContext (sort keys %{$refH_allRegionSeqContext})
 			{
 				if($k_hFile eq $k_allRegonSeqContext)
 				{
@@ -1195,8 +1159,16 @@ sub RecoverGenomicSequence
 					{
 						my @tab = split("\t", ${$refH_InputFile->{$k_hFile}}[$k]);
 
+						# Write Annovar annotation + strand orientation
 						for(my $i=0; $i<$length_AVheader+1; $i++) { print OUT $tab[$i],"\t"; $j=$i; }
+						# Write the sequence context with the length defined by the user (default is 10)
 						print OUT $refH_allRegionSeqContext->{$k_allRegonSeqContext};
+						# Write the trinucleotide context
+						my $contextSequence           = $refH_allRegionSeqContext->{$k_allRegonSeqContext}; $contextSequence =~ tr/a-z/A-Z/;
+						my @tempContextSequence       = split("", $contextSequence);
+						my $midlle_totalNbBaseContext = (scalar(@tempContextSequence)-1)/2; # For having the middle of the sequence
+						print OUT "\t".$tempContextSequence[$midlle_totalNbBaseContext-1]."x".$tempContextSequence[$midlle_totalNbBaseContext+1];
+						# Write the original columns
 						for(my $i=$j+1; $i<=$#tab; $i++) { print OUT "\t$tab[$i]"; }
 						print OUT "\n";
 					}
@@ -1238,8 +1210,12 @@ sub recoverNumCol
   {
     if($tab_search_header[$i] eq $name_of_column) { $name_of_column_NB = $i; last; }
   }
-  if($name_of_column_NB eq "toto") { print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit 4; }
-  else                             { return $name_of_column_NB; }
+  if($name_of_column_NB eq "toto")
+  {
+  	print STDERR "Error message:\n";
+  	print STDERR "Error recoverNumCol(): the column named $name_of_column doesn't exits in the input file $input!!!!!\n";
+  }
+  else { return $name_of_column_NB; }
 }
 
 
@@ -1274,7 +1250,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 10-2016 (October 2016)
+ Version: 02-2017 (February 2017)
 
 
 =head1 OPTIONS
