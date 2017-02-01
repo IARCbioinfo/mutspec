@@ -95,7 +95,9 @@ sub CheckFlags
 	# If no output is specified write the result as the same place as the input file
 	if($output eq "empty")
 	{
-		my $directory = dirname( $directories );
+		my $directory = "";
+		if(-d $input) { $directory = dirname( $input ); }
+		else          { $directory = dirname( $directories ); }
 
 		$folderMutAnalysis = "$directory/Mutational_Analysis";
 		if(!-e $folderMutAnalysis) { mkdir($folderMutAnalysis) or die "$!: $folderMutAnalysis\n"; }
