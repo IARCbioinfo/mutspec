@@ -404,7 +404,7 @@ Function: Filter out variants present in public databases
  					mutspecFilter.pl --filter path_to_bed --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
 
- Version: 01-2017 (February 2017)
+ Version: 02-2017 (February 2017)
 
 
 =head1 OPTIONS
