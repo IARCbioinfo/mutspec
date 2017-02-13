@@ -95,9 +95,7 @@ sub CheckFlags
 	# If no output is specified write the result as the same place as the input file
 	if($output eq "empty")
 	{
-		my $directory = "";
-		if(-d $input) { $directory = dirname( $input ); }
-		else          { $directory = dirname( $directories ); }
+		my $directory = dirname( $input );
 
 		$folderMutAnalysis = "$directory/Mutational_Analysis";
 		if(!-e $folderMutAnalysis) { mkdir($folderMutAnalysis) or die "$!: $folderMutAnalysis\n"; }
@@ -653,70 +651,75 @@ sub Convert2AV
 		my @tab = split("\t", $_);
 		my $chr = "";
 
-		# Don't consider chrM and GL
-		if($tab[$chr_value] =~ /M|GL/i) { next; }
-
 		# Replace chr23 or chr24 by X or Y
 		if($tab[$chr_value] =~ /23/)     { $chr = "chrX"; }
 		elsif($tab[$chr_value] =~ /24/)  { $chr = "chrY"; }
 		elsif($tab[$chr_value] =~ /chr/) { $chr = $tab[$chr_value]; }
 		else                             { $chr = "chr".$tab[$chr_value]; }
 
+
+		### Consider only "normal" chromosomes for the annotation
+		if( ($chr !~ /chr\d{1,2}$|chrX|chrY/) ) { next; }
+
+
+		### Don't consider variants with two or more alt bases
+		if($tab[$alt_value] =~ /\,/) { next; }
+
 		### Reformat the Indels for Annovar
-			# chr1	85642631	C	    CT  => chr1	85642631	85642631	-	  T   (mm10)
-			# chr5	26085724	ACTT	A   => chr5	26085725	26085727	CTT	-   (mm10)
-			if( ((length($tab[$ref_value]) != 1) || (length($tab[$alt_value]) != 1)) || (($tab[$ref_value] eq "-") || ($tab[$alt_value] eq "-") ) )
+		# chr1	85642631	C	    CT  => chr1	85642631	85642631	-	  T   (mm10)
+		# chr5	26085724	ACTT	A   => chr5	26085725	26085727	CTT	-   (mm10)
+		if( ((length($tab[$ref_value]) != 1) || (length($tab[$alt_value]) != 1)) || (($tab[$ref_value] eq "-") || ($tab[$alt_value] eq "-") ) )
+		{
+			### First check if the indels in the file are not already correctly formated
+			if( ($tab[$ref_value] eq "-") || ($tab[$alt_value] eq "-") )
 			{
-				### First check if the indels in the file are not already correctly formated
-				if( ($tab[$ref_value] eq "-") || ($tab[$alt_value] eq "-") )
+				# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
+				# Insertion: start = start & end = start
+				if($tab[$ref_value] =~ /\-/)
 				{
-					# For indels count the number of bases deleted or inserted for modifying the end position (if start + end is the same the annotations are not retrieved for indels)
-					# Insertion: start = start & end = start
-					if($tab[$ref_value] =~ /\-/)
-					{
-						print OUT "$chr\t$tab[$start_value]\t$tab[$start_value]\t$tab[$ref_value]\t$tab[$alt_value]";
-					}
-					## Deletion: start = start & end = start + length(del) -1
-					else
-					{
-						my $end = $tab[$start_value] + (length($tab[$ref_value]) - 1);
-						print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
-					}
+					print OUT "$chr\t$tab[$start_value]\t$tab[$start_value]\t$tab[$ref_value]\t$tab[$alt_value]";
 				}
-				### Indels not correctly formated for Annovar
+				## Deletion: start = start & end = start + length(del) -1
 				else
 				{
-					my @tabRef = split("", $tab[$ref_value]);
-					my @tabAlt = split("", $tab[$alt_value]);
-
-					# Remove the first base
-					my $ref2 = join("", @tabRef[1 .. $#tabRef]);
-					my $alt2 = join("", @tabAlt[1 .. $#tabAlt]);
-
-					if(length($alt2) == 0)
-					{
-						my $altOK   = "-";
-						my $startOK = $tab[$start_value] + 1;
-						my $stopOK  = $startOK + length($ref2) - 1;
-						print OUT $chr."\t".$startOK."\t".$stopOK."\t".$ref2."\t".$altOK;
-					}
-
-					if(length($ref2) == 0)
-					{
-						my $refOK = "-";
-						print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$refOK."\t".$alt2;
-					}
+					my $end = $tab[$start_value] + (length($tab[$ref_value]) - 1);
+					print OUT "$chr\t$tab[$start_value]\t$end\t$tab[$ref_value]\t$tab[$alt_value]";
 				}
 			}
-			### SBS
+			### Indels not correctly formated for Annovar
 			else
 			{
-				print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$tab[$ref_value]."\t".$tab[$alt_value];
-			}
+				my @tabRef = split("", $tab[$ref_value]);
+				my @tabAlt = split("", $tab[$alt_value]);
 
-			## Print the original file at the end
-			foreach  (@tab) {  print OUT "\t$_"; }
-			print OUT "\n";
+				# Remove the first base
+				my $ref2 = join("", @tabRef[1 .. $#tabRef]);
+				my $alt2 = join("", @tabAlt[1 .. $#tabAlt]);
+
+				if(length($alt2) == 0)
+				{
+					my $altOK   = "-";
+					my $startOK = $tab[$start_value] + 1;
+					my $stopOK  = $startOK + length($ref2) - 1;
+					print OUT $chr."\t".$startOK."\t".$stopOK."\t".$ref2."\t".$altOK;
+				}
+
+				if(length($ref2) == 0)
+				{
+					my $refOK = "-";
+					print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$refOK."\t".$alt2;
+				}
+			}
+		}
+		### SBS
+		else
+		{
+			print OUT $chr."\t".$tab[$start_value]."\t".$tab[$start_value]."\t".$tab[$ref_value]."\t".$tab[$alt_value];
+		}
+
+		## Print the original file at the end
+		foreach  (@tab) {  print OUT "\t$_"; }
+		print OUT "\n";
 	}
 	close F1; close OUT;
 }
