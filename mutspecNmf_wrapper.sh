@@ -13,7 +13,7 @@ parameters=$1;shift
 source=$1;shift
 input=$1
 
-if [[ $source == "html" ]] 
+if [[ $source == "html" ]]
 then input=${input%%.*}_files/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt
 fi
 
@@ -29,9 +29,20 @@ if [[ ! -e "$output_dir/NMF/Files/MatrixW-Normto100.txt" ]]; then
 	exit
 fi
 
+#########################################
+### Create an archive with all results  #
+#########################################
+cd $output_dir
+echo "$output_dir/NMF.zip NMF"
+zip -r "$output_dir/NMF.zip" "NMF"
+
 
 echo "<html><body>" >> $html
 echo "<center> <h2> NMF Mutational signatures analysis </h2> </center>" >> $html
+
+
+echo "<br/> Download the results" >> $html
+echo "<br/><a href="NMF.zip">NMF.zip</a><br/>" >> $html
 
 
 echo "<table>" >> $html
@@ -44,7 +55,7 @@ if [[ ! -e "$output_dir/NMF/Figures/Heatmap_MixtureCoeff.png" ]]; then
 else
 	echo "<td> <center> <a href="NMF/Figures/Heatmap_MixtureCoeff.png">" >> $html
 	echo "<img src="NMF/Figures/Heatmap_MixtureCoeff.png" /></a> <center> </td>" >> $html
-fi	
+fi
 echo "</tr>" >> $html
 echo "</table>" >> $html
 
