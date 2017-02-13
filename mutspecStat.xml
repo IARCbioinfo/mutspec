@@ -4,9 +4,10 @@
 <requirements>
     <requirement type="set_environment">SCRIPT_PATH</requirement>
     <requirement type="package" version="5.18.1">perl</requirement>
-    <requirement type="package" version="3.3">weblogo</requirement>
+    <requirement type="package" version="3.5">weblogo</requirement>
     <requirement type="package" version="1.9">numpy</requirement>
-    <requirement type="package" version="3.1.2">R</requirement>
+    <requirement type="package" version="3.2.1">R</requirement>
+    <requirement type="package" version="2.11.1">fontconfig</requirement>
     <requirement type="package" version="0.1">mutspec</requirement>
 </requirements>
 
@@ -56,12 +57,11 @@
 </outputs>
 
 <stdio>
-    <regex match="FutureWarning"
-           source="both"
-           level="warning"
-           description="FutureWarning" />
-    <exit_code range="2"   level="fatal"   description="Empty arguments" />
-    <exit_code range="3"   level="fatal"   description="" />
+    <regex match="FutureWarning"               source="both"     level="warning"  description="FutureWarning" />
+    <regex match="Missing flag !"              source="stderr"   level="fatal"    description="You have forgotten to specify one or more arguments" />
+    <regex match="Error"                       source="stderr"   level="fatal"    description="Read error message for more details" />
+    <regex match="Erreur"                      source="both"     level="fatal"    description="Read error message for more details" />
+    <regex match="Use of uninitialized value"  source="both"     level="fatal"    description="Read error message for more details" />
 </stdio>
 
 <help>
