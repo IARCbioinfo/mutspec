@@ -12,10 +12,6 @@
             <package name="perl" prior_installation_required="True" version="5.18.1" />
           </repository> 
 
-          <repository name="package_r_3_1_2" owner="iuc">
-            <package name="R" version="3.1.2" />
-          </repository>
-
           <!-- allow downloading and installing an Perl package from cpan.org-->
           <package>http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/IPC-Run-0.94.tar.gz</package>
           <package>http://search.cpan.org/CPAN/authors/id/A/AB/ABIGAIL/Regexp-Common-2013031301.tar.gz</package>
@@ -34,19 +30,40 @@
   <package name="perl" version="5.18.1">
     <repository name="package_perl_5_18" owner="iuc" prior_installation_required="True" />
   </package>
-    
-  <package name="weblogo" version="3.3">
-    <repository name="package_weblogo_3_3" owner="devteam" prior_installation_required="True"  />
+
+  <!-- package_weblogo_3_3 has broken link in main Galaxy toolshed (February 2017) -->
+  <package name="weblogo" version="3.5">
+    <install version="1.0">
+      <actions>
+       <action type="download_by_url">https://github.com/WebLogo/weblogo/archive/master.zip</action>                               
+        <!-- Use screen instead of printer to work around a color bug in ghostscript. -->
+        <action type="shell_command">sed -i.bak 's#"-dPDFSETTINGS=/printer",#"-dPDFSETTINGS=/screen",#' weblogolib/__init__.py</action>
+          <action type="move_directory_files">
+            <source_directory>.</source_directory>
+              <destination_directory>$INSTALL_DIR</destination_directory>
+          </action>
+          <action type="set_environment">
+            <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR</environment_variable>
+            <environment_variable name="PYTHONPATH" action="prepend_to">$INSTALL_DIR</environment_variable>
+          </action>
+        </actions>
+      </install>
+    <readme></readme>
   </package>
-    
+
   <package name="numpy" version="1.9">
     <repository  name="package_python_2_7_numpy_1_9" owner="iuc" prior_installation_required="True"  />
   </package>
 
-  <package name="R" version="3.1.2">
-    <repository  name="package_r_3_1_2" owner="iuc" prior_installation_required="True"  />
+  <package name="R" version="3.2.1">
+    <repository  name="package_r_3_2_1" owner="iuc" prior_installation_required="True"  />
   </package>
-    
+
+  <!-- package_R_3_2_1 doesn't load fontconfig, load it manually -->
+  <package name="fontconfig" version="2.11.1">
+    <repository  name="package_fontconfig_2_11_1" owner="iuc" prior_installation_required="True"  />
+  </package>
+
   <package name="mutspec" version="0.1">
     <repository  name="package_r_mutspec_0_1" owner="iarc" prior_installation_required="True" />
   </package>
