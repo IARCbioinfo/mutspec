@@ -66,6 +66,13 @@ css=$output_dir/Mutational_Analysis/style.css
 echo ".legend{position:relative}.legend .legend-hidden{display:none;position:absolute;background-color:#fff;border:3px solid #03F;padding:3px;color:#000;font-size:1em;border-radius:10px;margin-top:-40px}.legend:hover .legend-hidden{display:block}" > $css
 
 
+#########################################
+### Create an archive with all results  #
+#########################################
+cd $output_dir
+zip -r "$output_dir/Mutational_Analysis.zip" "Mutational_Analysis"
+
+
 
 # HMTL page for the result of the tool
 echo "<html>" >> $html
@@ -74,6 +81,9 @@ echo "<body>" >> $html
 if [ -d $output_dir/Mutational_Analysis/Figures ]; then
 
 echo "<center> <h2>Mutational spectra report summary</h2> </center>" >> $html
+
+echo "<br/> Download the results" >> $html
+echo "<br/><a href="Mutational_Analysis.zip">Mutational_Analysis.zip</a><br/>" >> $html
 
 echo "<br/> Download the full report in Excel" >> $html
 
@@ -146,16 +156,16 @@ do
 
   ## Pool Data is handle separately
   if [ $name = "Pool_Data" ]; then
-  	break
+  	continue
   fi
 
   outfile="$output_dir/Mutational_Analysis/$name.html"
   touch $outfile # Create an empty file named $outfile
   echo "<a href='Mutational_Analysis/$name.html'>$name</a><br/>" >> $html
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-#                                                                              INDIVIDUAL SAMPLES                                                                         #
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+#                                                     			INDIVIDUAL SAMPLES                                                                        #
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 echo "<br/> <center> <h2>Mutational Spectra report for $name</h2> </center> <br/>" >> $outfile
 
 echo "<html>" >> $outfile
@@ -330,9 +340,9 @@ echo "</body></html>" >> $outfile
 
 done
 
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-#                                                                                     POOL DATA                                                                           #
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+#                                                                       POOL DATA                                                                     #
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
 ## HMTL Link to Pool_Data
 if [[ $parameters =~ "--pooldata" ]]; then
   outfilePoolData="$output_dir/Mutational_Analysis/Pool_Data.html"
