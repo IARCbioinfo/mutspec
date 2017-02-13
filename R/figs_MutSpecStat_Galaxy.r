@@ -8,7 +8,7 @@
 
 
 #########################################################################################################################################
-#                                  					 			Create the figures for the report and the HTML page            		            				#
+#                                     Create the figures for the report and the HTML page                          #
 #########################################################################################################################################
 
 
@@ -23,13 +23,13 @@ suppressMessages(suppressWarnings(require("getopt")))
 # Recover the arguments
 #-------------------------------------------------------------------------------
 spec = matrix(c(
-                "folderFigure", "folderFigure", 1, "character",
-                "folderTemp",   "folderTemp",   1, "character",
-                "filename",     "filename",     1, "character",
-                "help",         "h",            0, "logical"
-               ),
-               byrow=TRUE, ncol=4
-            )
+  "folderFigure", "folderFigure", 1, "character",
+  "folderTemp",   "folderTemp",   1, "character",
+  "filename",     "filename",     1, "character",
+  "help",         "h",            0, "logical"
+),
+byrow=TRUE, ncol=4
+)
 
 opt = getopt(spec)
 
@@ -111,14 +111,13 @@ bar <- bar + theme_classic()
 bar <- bar + xlab("")
 # Set the color of the bars and Changing the labels in the legend
 bar <- bar + scale_fill_manual(values=c("blue", "black", "red", "gray", "#00CC33", "pink"),
-								                        labels=c("C:G>A:T", "C:G>G:C", "C:G>T:A", "T:A>A:T", "T:A>C:G", "T:A>G:C")
-								                       )
+                               labels=c("C:G>A:T", "C:G>G:C", "C:G>T:A", "T:A>A:T", "T:A>C:G", "T:A>G:C")
+)
 # Remove the label in x axis
 bar <- bar + theme(axis.text.x = element_blank())
 # Change the name of the y label
 bar <- bar + ylab("Percent")
 # Save the plot for the HTML page (higher resolution)
-options(bitmapType='cairo')
 png(outputDistrSBS, width=1800, height=1500, res=300)
 print(bar)
 dev.off()
@@ -147,7 +146,6 @@ pie <- pie + guides(fill=guide_legend(ncol=2)) + theme(legend.position="bottom")
 # Remove the legend title
 pie <- pie + labs(fill="")
 # Save the plot for the HTML page (higher resolution)
-options(bitmapType='cairo')
 png(outputImpactProt, width=1600, height=1800, res=300)
 print(pie)
 dev.off()
@@ -172,7 +170,6 @@ cb_palette_SB <- c("#0072B2", "#CC0000")
 # Base plot
 p_sb          <- ggplot(file_sb, aes(x=Alteration, y=Count, fill=Strand)) + theme_classic() + geom_bar(stat="identity", position="dodge") + scale_fill_manual(values=cb_palette_SB) + theme(axis.text.x = element_text(angle=60, hjust=1)) + xlab("") + theme(legend.position="bottom")
 # Save the plot for the HTML page (higher resolution)
-options(bitmapType='cairo')
 png(outputSB, width=1000, height=1200, res=300)
 print(p_sb)
 dev.off()
@@ -198,13 +195,11 @@ outputHeatmapGenomicPercentReport <- paste0(opt$folderTemp, "/", opt$filename, "
 ## COUNT
 heatmap_C <- read.table(inputHeatmapGenomic, header=T)
 # Save the plot for the report
-options(bitmapType='cairo')
 png(filename=outputHeatmapGenomicReport, bg="transparent", width=240, height=360)
 # Heatmap with an absolute scale
 heatmap.2(as.matrix(heatmap_C),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_C)),labCol=colnames(as.matrix(heatmap_C)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
 dev.off()
 # Save the plot for the HTML page (higher resolution)
-options(bitmapType='cairo')
 png(filename=outputHeatmapGenomic, width=1100, height=1600, res=300)
 heatmap.2(as.matrix(heatmap_C),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_C)),labCol=colnames(as.matrix(heatmap_C)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
 dev.off()
@@ -212,13 +207,11 @@ dev.off()
 ## PERCENT
 heatmap_P <- read.table(inputHeatmapGenomicPercent, header=T)
 # Save the plot for the report
-options(bitmapType='cairo')
 png(filename=outputHeatmapGenomicPercentReport,bg="transparent", width=240, height=360)
 # Heatmap with an absolute scale
 heatmap.2(as.matrix(heatmap_P),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_P)),labCol=colnames(as.matrix(heatmap_P)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
 dev.off()
 # Save the plot for the HTML page (higher resolution)
-options(bitmapType='cairo')
 png(filename=outputHeatmapGenomicPercent, width=1100, height=1600, res=300)
 heatmap.2(as.matrix(heatmap_P),Rowv=F,Colv=F,col=colorpanel(384,low="yellow",high="red"),dendrogram="none",scale="none",trace="none",key=F,labRow=rownames(as.matrix(heatmap_P)),labCol=colnames(as.matrix(heatmap_P)),lmat=rbind(c(5,1,4),c(3,1,2)), lhei=c(0.75,0.75),lwid=c(0.5,1.5,0.5))
 dev.off()
