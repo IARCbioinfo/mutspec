@@ -102,11 +102,11 @@ if(basename(published_signature_file) == "Frequency-COSMICv72-Hupki.txt")
                                          "Signature.18", "Signature.19", "Signature.20", "Signature.21", "Signature.22", "Signature.23", "Signature.24", "Signature.25",
                                          "Signature.26", "Signature.27", "Signature.28", "Signature.29", "Signature.30",
                                          "Signature.1.MEF", "Signature.2.MEF", "Signature.3.MEF", "Signature.5.MEF"),
-                              labels = c("(Age) Sign 1", "(AID/APOBEC) Sign 2", "(BRCA1/2) Sign 3", "(Smoking) Sign 4", "Sign 5", "(DNA MMR deficiency) Sign 6", "(UV) Sign 7",
-                                         "Sign 8", "(IgG) Sign 9", "(pol e) Sign 10", "(temozolomide) Sign 11", "Sign 12", "(AID/APOBEC) Sign 13", "Sign 14",
-                                         "(DNA MMR deficiency) Sign 15", "Sign 16", "Sign 17", "Sign 18", "Sign 19", "(DNA MMR deficiency) Sign 20", "Sign 21", "(AA) Sign 22",
-                                         "Sign 23", "(Aflatoxin) Sign 24", "Sign 25", "(DNA MMR deficiency) Sign 26", "Sign 27", "Sign 28", "(Tobacco chewing) Sign 29", "Sign 30",
-                                         "(AA) Sign 1 MEF", "(AID) Sign 2 MEF", "(BaP) Sign 3 MEF", "(MNNG) Sign 5 MEF")
+                              labels = c("(Age) Sig 1", "(AID/APOBEC) Sig 2", "(BRCA1/2) Sig 3", "(Smoking) Sig 4", "Sig 5", "(DNA MMR deficiency) Sig 6", "(UV) Sig 7",
+                                         "Sig 8", "(IgG) Sig 9", "(pol e) Sig 10", "(temozolomide) Sig 11", "Sig 12", "(AID/APOBEC) Sig 13", "Sig 14",
+                                         "(DNA MMR deficiency) Sig 15", "Sig 16", "Sig 17", "Sig 18", "Sig 19", "(DNA MMR deficiency) Sig 20", "Sig 21", "(AA) Sig 22",
+                                         "Sig 23", "(Aflatoxin) Sig 24", "Sig 25", "(DNA MMR deficiency) Sig 26", "Sig 27", "Sig 28", "(Tobacco chewing) Sig 29", "Sig 30",
+                                         "(AA) Sig 1 MEF", "(AID) Sig 2 MEF", "(BaP) Sig 3 MEF", "(MNNG) Sig 5 MEF")
                               )
 }
 
