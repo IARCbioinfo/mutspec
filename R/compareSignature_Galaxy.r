@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: compareSignature_Galaxy.r #
-# Last update: 29/10/15             #
+# Last update: 14/02/17             #
 #-----------------------------------#
 
 
