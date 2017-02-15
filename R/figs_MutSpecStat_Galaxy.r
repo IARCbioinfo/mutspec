@@ -56,6 +56,7 @@ if ( !is.null(opt$help) )
 suppressMessages(suppressWarnings(library(ggplot2)))
 suppressMessages(suppressWarnings(library(gplots)))
 suppressMessages(suppressWarnings(library(gtable)))
+suppressMessages(suppressWarnings(library(grid)))
 
 
 
@@ -112,7 +113,7 @@ bar <- bar + xlab("")
 # Set the color of the bars and Changing the labels in the legend
 bar <- bar + scale_fill_manual(values=c("blue", "black", "red", "gray", "#00CC33", "pink"),
                                labels=c("C:G>A:T", "C:G>G:C", "C:G>T:A", "T:A>A:T", "T:A>C:G", "T:A>G:C")
-)
+                              )
 # Remove the label in x axis
 bar <- bar + theme(axis.text.x = element_blank())
 # Change the name of the y label
