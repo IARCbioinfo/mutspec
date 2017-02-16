@@ -78,6 +78,13 @@ APA12::
      chr11  86663436    86663436  C    A    exonic        FZD4          nonsynonymous SNV   NM_012193:c.G362T:p.C121F    NA                NA                NA      NA             NA                                 -       GACTGAAAGACACATGCCGCC chr11                              86663436                         C                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
      chr12  57872994    57872994  G    A    exonic        ARHGAP9       nonsynonymous SNV   NM_001080157:c.C196T:p.R66C  NA                NA                NA      0.000077       ID=COSM431582;OCCURENCE=2(breast)  -       GCTTCTAGGCGTCTTGCCAAC chr12                              57872994                         G                        A                        APA12        21311022     34   Tissue Remark Fixed:Remark
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
 
 
 </help>
