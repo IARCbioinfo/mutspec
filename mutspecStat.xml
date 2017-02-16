@@ -154,6 +154,14 @@ SBS within their trinucleotide sequence context are counted on the non-transcrib
 Only SBS with strand orientation annotation are considered in this analysis (strand annotation retrieved from RefSeq database).
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
+
 </help>
 
 <citations>

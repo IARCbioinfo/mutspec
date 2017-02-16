@@ -129,6 +129,14 @@ Will produce::
      chr4   70156391   70156391   T    C    exonic        UGT2B28       nonsynonymous SNV     UGT2B28:NM_053039:exon5:c.T1172C:p.V391A   score=0.949699;Name=chr4:70035680  NA           0.000199681       NA             +       GTA      chr4        70156391        70156391      T                 C
 
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
+
 
 </help>
 
