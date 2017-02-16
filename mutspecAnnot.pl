@@ -132,7 +132,6 @@ sub CheckFlags
 		print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n";
 		exit;
 	}
-	else { $listAVDB = "$pathAVDBList/${refGenome}_listAVDB.txt" }
 
 	# If no temp folder is specified write the result in the current path
 	if($folder_temp eq "empty") { $folder_temp   = "$pwd/TEMP_MutationalAnalysis_$filename"; }
