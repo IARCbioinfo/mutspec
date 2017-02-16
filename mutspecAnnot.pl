@@ -20,7 +20,16 @@ our ($refGenome, $output, $path_AVDB, $pathAVDBList, $folder_temp) = ("empty", "
 our ($intervalEnd)          = (10); # Number of bases for the flanking region for the sequence context.
 our ($fullAVDB)             = "yes"; # Add an option for using all Annovar databases for the annotation or only refGene + strand + context for having a quicker annotation (for large file with million of lines)
 
-GetOptions('verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'refGenome=s'=>\$refGenome, 'interval=i' => \$intervalEnd, 'fullAnnotation=s' => \$fullAVDB, 'outfile|o=s' => \$output, 'pathAnnovarDB|AVDB=s' => \$path_AVDB, 'pathAVDBList=s' => \$pathAVDBList, 'pathTemporary|temp=s' => \$folder_temp) or pod2usage(2);
+
+#########################################
+###     SPECIFY THE NUMBER OF CPU     ###
+#########################################
+our ($max_cpu) = 8; # Max number of CPU to use for the annotation
+
+
+
+
+GetOptions('verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'refGenome=s'=>\$refGenome, 'interval=i' => \$intervalEnd, 'fullAnnotation=s' => \$fullAVDB, 'outfile|o=s' => \$output, 'pathAnnovarDB|AVDB=s' => \$path_AVDB, 'pathAVDBList=s' => \$pathAVDBList, 'pathTemporary|temp=s' => \$folder_temp, 'max_cpu=i' => \$max_cpu) or pod2usage(2);
 
 our ($input) = @ARGV;
 
@@ -34,14 +43,6 @@ pod2usage(-verbose=>0, -exitval=>1, -output=>\*STDERR) if(@ARGV == 2); # Only on
 ######################################################################################################################################################
 #																																			GLOBAL VARIABLES																															 #
 ######################################################################################################################################################
-
-#########################################
-###     SPECIFY THE NUMBER OF CPU     ###
-#########################################
-our $max_cpu = 12; # Max number of CPU to use for the annotation
-
-
-
 
 # Recover the current path
 our $pwd = `pwd`;
@@ -1247,6 +1248,7 @@ mutspec-Annot
                    --pathAVDBList                the path to the list of AV databases installed
         -temp      --pathTemporary <string>      the path for saving the temporary files
                    --fullAnnotation <string>     recover all Annovar annotations (yes) or only the minimum for MutSpec-Stat (no)
+                   --max_cpu <integer>           number of CPUs to be used for the annotation
 
 
 Function: automatically run a pipeline on a list of variants and annote them using Annovar
@@ -1304,6 +1306,11 @@ Deleted when the script is finish
 =item B<--fullAnnotation>
 
 Use all Annovar databases for the annotation (set to yes) or only refGene + strand + context (set to no) for having a quicker annotation (for large file with million of lines)
+
+=item B<--max_cpu>
+
+Specify the number of CPUs to be used. This number is used for spliting the file in n part and running the annotations in each part in parallel.
+
 
 =head1 DESCRIPTION
 
