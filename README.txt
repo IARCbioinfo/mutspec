@@ -15,6 +15,7 @@ http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1011-z
 
 Test data: https://usegalaxy.org/u/maude-ardin/p/mutspectestdata
 
+Source code: https://github.com/IARCbioinfo/mutspec.git
 
 
 ### Requirements
