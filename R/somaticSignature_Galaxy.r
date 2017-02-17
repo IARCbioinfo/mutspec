@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: somaticSignature_Galaxy.r #
-# Last update: 29/07/15             #
+# Last update: 17/02/17             #
 #-----------------------------------#
 
 
@@ -25,6 +25,7 @@ spec = matrix(c(
                 "nbSignature", "nbSign", 1, "integer",
                 "cpu",         "cpu",    1, "integer",
                 "output",      "o",      1, "character",
+                "html",        "html",   0, "character",
                 "help",        "h",      0, "logical"
                ),
                byrow=TRUE, ncol=4
@@ -35,7 +36,7 @@ opt = getopt(spec);
 # No argument is pass to the command line
 if(length(opt) == 1)
 {
-  cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir>\n",sep=""))
+  cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir> --html <html_for_Galaxy>\n",sep=""))
   q(status=1)
 }
 
@@ -43,7 +44,7 @@ if(length(opt) == 1)
 if ( !is.null(opt$help) )
 {
   # print a friendly message and exit with a non-zero error code
-  cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir>\n",sep=""))
+  cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir> --html <html_for_Galaxy>\n",sep=""))
   q(status=1)
 }
 
@@ -201,7 +202,8 @@ invisible( sapply(1:nrow(matrixNMF), function(x) { CheckFile(rowSums(matrixNMF)[
                                         ###############################################################################
                                         #                                     Run NMF                                 #
                                         ###############################################################################
-
+# Create outdir
+dir.create(opt$output)
 # Create the output directories
 output_NMF  <- paste0(opt$output, "/NMF")
 dir.create(output_NMF)
@@ -369,6 +371,17 @@ invisible( dev.off() )
                                         #            Contribution of mutational signature in each samples             #
                                         ###############################################################################
 
+# Calculate the variability expain by the model (evar)
+rss        <- rss(res, matrixNMF)
+varTot     <- sum(matrixNMF^2)
+evar       <- 1 - rss / varTot
+evar_round <- round(evar, digits=3) * 100
+
+if(is.null(opt$html))
+{
+  cat("\n", evar_round, "% of the data are explained with", opt$nbSignature, "signatures\n\n")
+}
+
 # Recover the total number of SBS per samples
 NbSBS <- colSums(matrixNMF)
 # Normalized matrix H  to 100%
@@ -381,31 +394,37 @@ rownames(matrixH_norm) <- sapply(1:length(rownames(matrixH_norm)), function(x) {
 ## Combined the contribution with the total number of SBS
 matrixH_norm_melt <- melt(matrixH_norm)
 matrixH_norm_melt <- cbind(matrixH_norm_melt, rep(NbSBS, each = opt$nbSignature))
-colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Value", "Total_SBS")
+colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total_SBS")
 
 # Calculate the contribution in number of SBS
-matrixH_norm_melt$ContriSBS <- sapply(1:nrow(matrixH_norm_melt), function(x) { Contri2SignSBS(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Value[x]) } )
+matrixH_norm_melt$ContriSBS <- sapply(1:nrow(matrixH_norm_melt), function(x) { Contri2SignSBS(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
+colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total_SBS", "CountSBS_Contri")
 
+# # Calculate the count of SBS considering the error
+# matrixH_norm_melt$countError <- sapply(1:nrow(matrixH_norm_melt), function(x) { contriWithError(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
 
 # Save the matrix
 write.table(matrixH_norm_melt, file=output_matrixH_ggplot2, quote=F, sep="\t", col.names=T, row.names=F)
 
 # Base plot for the contribution of each samples according the count of mutations
-p2 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -ContriSBS), y=ContriSBS, fill=Signature)) + geom_bar(stat="identity") + theme_classic()
-# Remove the name of samples
-p2 <- p2 + theme(axis.text.x = element_blank()) 
+p2 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -CountSBS_Contri), y=CountSBS_Contri, fill=Signature)) + geom_bar(stat="identity") + theme_classic()
 # Reverse the y axis
 p2 <- p2 + scale_y_reverse()
 # Rename the y and x axis
 p2 <- p2 + ylab("Number of mutations") + xlab("Samples")
 # Remove the x axis line
 p2 <- p2 + theme(axis.line.x=element_blank())
+# Add sample names
+if(ncol(matrixNMF) <= 30)
+{
+  p2 <- p2 + theme(axis.text.x = element_text(angle=90))
+}
+
 
 # Base plot for the contribution of each samples in percentages
-p3 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -ContriSBS), y=Value, fill=Signature)) + geom_bar(stat="identity") + theme_classic() + theme(axis.text.x = element_blank()) + xlab("") + ylab("% of mutations")
+p3 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -CountSBS_Contri), y=Percent_Contri, fill=Signature)) + geom_bar(stat="identity") + theme_classic() + theme(axis.text.x = element_blank()) + xlab("") + ylab("% of mutations")
 # Remove the x axis line
 p3 <- p3 + theme(axis.line.x=element_blank(), axis.ticks.x=element_blank())
-
 
 # Plot PNG
 png(figure_matrixH_png, width=3000, heigh=2000, res=300)
@@ -439,7 +458,7 @@ write.table(tmp_mat, file=output_matrixH_cluster, quote=F, sep="\t", col.names=T
 
 ## Create an image of the table with ggplot2
 # Dummy plot
-p4 <- qplot(1:10, 1:10, geom = "blank") + 
+p4 <- qplot(1:10, 1:10, geom = "blank") +
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank(),
                   panel.border = element_rect(fill=NA,color="white", size=0.5, linetype="solid"),
@@ -447,7 +466,7 @@ p4 <- qplot(1:10, 1:10, geom = "blank") +
                   axis.ticks = element_blank(),
                   panel.background = element_rect(fill="white"),
                   plot.background = element_rect(fill="white"),
-                  legend.position = "none", 
+                  legend.position = "none",
                   axis.text = element_blank(),
                   axis.title  = element_blank()
                  )
@@ -465,3 +484,92 @@ invisible( dev.off() )
 
 # Delete the empty plot created by the script
 if (file.exists("Rplots.pdf")) invisible( file.remove("Rplots.pdf") )
+
+
+
+                                        ###############################################################################
+                                        #                         Create HTML output for Galaxy                       #
+                                        ###############################################################################
+if(! is.null(opt$html))
+{
+  # Galaxy doesn't need the full path to the files so redefine the output filenames
+  output_cluster_html         <- paste0("NMF/Files/Cluster_MixtureCoeff.txt")
+  figure_cluster_html         <- paste0("NMF/Figures/Heatmap_MixtureCoeff.png")
+  output_matrixW_html         <- paste0("NMF/Files/MatrixW-Normto100.txt")
+  output_matrixH_ggplot2_html <- paste0("NMF/Files/MatrixH-Inputggplot2.txt")
+  output_matrixH_cluster_html <- paste0("NMF/Files/Average_ContriByCluster.txt")
+  figure_matrixW_png_html     <- paste0("NMF/Figures/CompositionSomaticMutation.png")
+  figure_matrixH_png_html     <- paste0("NMF/Figures/ContributionMutationSignature.png")
+  figure_matrixH_cluster_html <- paste0("NMF/Figures/Average_ContriByCluster.png")
+
+
+  #### Create an archive with all the results
+  setwd(opt$output)
+  # zip("NMF.tar.gz", "NMF")
+  system("zip -r NMF.zip NMF")
+  
+  write("<html><body>", file=opt$html)
+  write("<center> <h2> NMF Mutational signatures analysis </h2> </center>", file=opt$html, append=TRUE)
+  
+  write("<br/> Download the results", file=opt$html, append=TRUE)
+  write("<br/><a href=NMF.zip>NMF.zip</a><br/>", file=opt$html, append=TRUE)
+  
+  #### Heatmap
+  write("<table>", file=opt$html, append=TRUE)
+  write("<tr> <br/> <th><h3>Heatmap of the mixture coefficient matrix</h3></th> </tr>", file=opt$html, append=TRUE)
+  write(paste0("<tr> <td> <center> <br/> <a href=", output_cluster_html, ">Cluster_MixtureCoeff.txt</a> </center> </td> </tr>"), file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  
+  if(!file.exists(figure_cluster))
+  {
+    write("WARNING: NMF package can't plot the heatmap when the samples size is above 300. <br/>", file=opt$html, append=TRUE)
+  }else{
+    write(paste0("<td> <center> <a href=", figure_cluster_html, ">"), file=opt$html, append=TRUE)
+    write(paste0("<img src=", figure_cluster_html, "/></a> <center> </td>"), file=opt$html, append=TRUE)
+  }
+  write("</tr>", file=opt$html, append=TRUE)
+  write("</table>", file=opt$html, append=TRUE)
+  
+  ### Signature composition
+  write("<br/><br/>", file=opt$html, append=TRUE)
+  write("<table>", file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write("<th><h3>Signature composition</h3></th>", file=opt$html, append=TRUE)
+  write("</tr>", file=opt$html, append=TRUE)
+  write(paste0("<tr><td>", evar_round, "% of the data are explained with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
+  write("<tr height=15></tr>", file=opt$html, append=TRUE)
+  write(paste0("<tr><td> <center> <a href=", output_matrixW_html ,">Composition somatic mutation (input matrix for the tool MutSpec-Compare)</a><center></td></tr>"), file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write(paste0("<td><a href=", figure_matrixW_png_html, ">"), file=opt$html, append=TRUE)
+  write(paste0("<img width=1000 src=", figure_matrixW_png_html, "/></a></td>"), file=opt$html, append=TRUE)
+  write("</tr>	", file=opt$html, append=TRUE)
+  write("</table>", file=opt$html, append=TRUE)
+  write("<br/><br/>", file=opt$html, append=TRUE)
+  
+  ### Sample contribution to signatures
+  write("<table>", file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write("<th><h3>Sample contribution to signatures</h3></th>", file=opt$html, append=TRUE)
+  write("</tr>", file=opt$html, append=TRUE)
+  write(paste0("<tr><td> <center> <a href=", output_matrixH_ggplot2_html, ">Contribution mutation signature matrix</a></center></td></tr>"), file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write(paste0("<td><a href=", figure_matrixH_png_html, ">"), file=opt$html, append=TRUE)
+  write(paste0("<img width=700 src=", figure_matrixH_png_html, "/></a></td>"), file=opt$html, append=TRUE)
+  write("</tr>", file=opt$html, append=TRUE)
+  write("</table>", file=opt$html, append=TRUE)
+  write("<br/><br/>", file=opt$html, append=TRUE)
+  
+  ### Average contributions of each signatures in each cluster
+  write("<table>", file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write("<th><h3>Average contributions of each signatures in each cluster</h3></th>", file=opt$html, append=TRUE)
+  write(paste0("<tr><td> <center> <a href=", output_matrixH_cluster_html, ">Average contributions</a></center></td></tr>"), file=opt$html, append=TRUE)
+  write("<tr>", file=opt$html, append=TRUE)
+  write(paste0("<td><a href=", figure_matrixH_cluster_html, ">"), file=opt$html, append=TRUE)
+  write(paste0("<img width=700 src=", figure_matrixH_cluster_html, "/></a></td>"), file=opt$html, append=TRUE)
+  write("</tr>	", file=opt$html, append=TRUE)
+  write("</table>", file=opt$html, append=TRUE)
+  write("<br/><br/>", file=opt$html, append=TRUE)
+  
+  write("<br/><br/><br/><br/>", file=opt$html, append=TRUE)
+}
