@@ -64,7 +64,7 @@ Restart galaxy instance for changes in .loc file to take effect or reload it int
 ### Installation
 
 	# MutSpec-Stat and MutSpec-NMF
-By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and mutspecNmf_wrapper.sh to change this number
+By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and mutspecNmf.xml to change this number
 to the maximum number of CPU available on your server.
 
 MutSpec-Stat and MutSpec-NMF tools allow parallel computations that are time consuming.
