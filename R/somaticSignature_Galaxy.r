@@ -37,6 +37,9 @@ opt = getopt(spec);
 if(length(opt) == 1)
 {
   cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir> --html <html_for_Galaxy>\n",sep=""))
+  
+  cat(paste0("\n--input        Input matrix created with the tool MutSpec-Stat\n--nbSignature  Number of signatures to extract (min = 2)\n--cpu          Number of CPUs\n--output       Output directory\n--html         Path to HTML page (ONLY FOR GALAXY WRAPPER)\n"))
+  
   q(status=1)
 }
 
