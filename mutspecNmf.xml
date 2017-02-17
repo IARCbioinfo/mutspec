@@ -11,16 +11,13 @@
     <requirement type="package" version="0.1">mutspec</requirement>
 </requirements>
 
-<command interpreter="bash">
-	mutspecNmf_wrapper.sh
-	$html_file
-	"--nbSign $nbsign"
-	${refGenomeSource.source}
-	#if $refGenomeSource.source == "html":
-		${refGenomeSource.reportHTML}
-	#else
-		${refGenomeSource.matrix}
-	#end if
+<command interpreter="Rscript --no-save">
+    R/somaticSignature_Galaxy.r --nbSign $nbsign --cpu 8 --output ${html_file.files_path} --html $html_file
+    #if $refGenomeSource.source == "html":
+        --input ${refGenomeSource.reportHTML.extra_files_path}/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt
+    #else
+        --input ${refGenomeSource.matrix}
+    #end if
 </command>
 
 <inputs>
@@ -44,7 +41,9 @@
 </outputs>
 
 <stdio>
-    <regex match="Error"   source="stderr"   level="fatal"    description="Read error message for more details" />
+    <regex match="Error"                            source="stderr"   level="fatal"    description="Read error message for more details" />
+    <regex match="Unable to create the directory"   source="stderr"   level="fatal"    description="Unable to create the directory" />
+    <regex match="Permission denied"                source="stderr"   level="fatal"    description="Read error message for more details" />
 </stdio>
 
 <help>
