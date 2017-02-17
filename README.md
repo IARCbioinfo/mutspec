@@ -423,6 +423,7 @@ List of parameters:
 | --nbSignature      | Number of signatures to extract |
 | --cpu              | Number of CPUs |
 | --output           | Output directory |
+| --html             | Path to HTML page (ONLY FOR GALAXY WRAPPER) |
 
 
 ### MutSpec-Compare
