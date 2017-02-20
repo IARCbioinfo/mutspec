@@ -37,9 +37,9 @@ opt = getopt(spec);
 if(length(opt) == 1)
 {
   cat(paste("Usage:\n somaticSignature_Galaxy.r --input <matrix> --nbSignature <nbSign> --cpu <cpu> --output <outputdir> --html <html_for_Galaxy>\n",sep=""))
-  
+
   cat(paste0("\n--input        Input matrix created with the tool MutSpec-Stat\n--nbSignature  Number of signatures to extract (min = 2)\n--cpu          Number of CPUs\n--output       Output directory\n--html         Path to HTML page (ONLY FOR GALAXY WRAPPER)\n"))
-  
+
   q(status=1)
 }
 
@@ -382,7 +382,7 @@ evar_round <- round(evar, digits=3) * 100
 
 if(is.null(opt$html))
 {
-  cat("\n", evar_round, "% of the data are explained with", opt$nbSignature, "signatures\n\n")
+  cat("\n", evar_round, "% of the variance explained in the data with", opt$nbSignature, "signatures\n\n")
 }
 
 # Recover the total number of SBS per samples
@@ -510,19 +510,19 @@ if(! is.null(opt$html))
   setwd(opt$output)
   # zip("NMF.tar.gz", "NMF")
   system("zip -r NMF.zip NMF")
-  
+
   write("<html><body>", file=opt$html)
   write("<center> <h2> NMF Mutational signatures analysis </h2> </center>", file=opt$html, append=TRUE)
-  
+
   write("<br/> Download the results", file=opt$html, append=TRUE)
   write("<br/><a href=NMF.zip>NMF.zip</a><br/>", file=opt$html, append=TRUE)
-  
+
   #### Heatmap
   write("<table>", file=opt$html, append=TRUE)
   write("<tr> <br/> <th><h3>Heatmap of the mixture coefficient matrix</h3></th> </tr>", file=opt$html, append=TRUE)
   write(paste0("<tr> <td> <center> <br/> <a href=", output_cluster_html, ">Cluster_MixtureCoeff.txt</a> </center> </td> </tr>"), file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
-  
+
   if(!file.exists(figure_cluster))
   {
     write("WARNING: NMF package can't plot the heatmap when the samples size is above 300. <br/>", file=opt$html, append=TRUE)
@@ -532,14 +532,14 @@ if(! is.null(opt$html))
   }
   write("</tr>", file=opt$html, append=TRUE)
   write("</table>", file=opt$html, append=TRUE)
-  
+
   ### Signature composition
   write("<br/><br/>", file=opt$html, append=TRUE)
   write("<table>", file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
   write("<th><h3>Signature composition</h3></th>", file=opt$html, append=TRUE)
   write("</tr>", file=opt$html, append=TRUE)
-  write(paste0("<tr><td>", evar_round, "% of the data are explained with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
+  write(paste0("<tr><td>", evar_round, "% of the variance explained in the data with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
   write("<tr height=15></tr>", file=opt$html, append=TRUE)
   write(paste0("<tr><td> <center> <a href=", output_matrixW_html ,">Composition somatic mutation (input matrix for the tool MutSpec-Compare)</a><center></td></tr>"), file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
@@ -548,7 +548,7 @@ if(! is.null(opt$html))
   write("</tr>	", file=opt$html, append=TRUE)
   write("</table>", file=opt$html, append=TRUE)
   write("<br/><br/>", file=opt$html, append=TRUE)
-  
+
   ### Sample contribution to signatures
   write("<table>", file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
@@ -561,7 +561,7 @@ if(! is.null(opt$html))
   write("</tr>", file=opt$html, append=TRUE)
   write("</table>", file=opt$html, append=TRUE)
   write("<br/><br/>", file=opt$html, append=TRUE)
-  
+
   ### Average contributions of each signatures in each cluster
   write("<table>", file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
@@ -573,6 +573,6 @@ if(! is.null(opt$html))
   write("</tr>	", file=opt$html, append=TRUE)
   write("</table>", file=opt$html, append=TRUE)
   write("<br/><br/>", file=opt$html, append=TRUE)
-  
+
   write("<br/><br/><br/><br/>", file=opt$html, append=TRUE)
 }
