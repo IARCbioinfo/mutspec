@@ -55,13 +55,13 @@ git clone https://github.com/IARCbioinfo/mutspec.git
 
 Then run the different scripts from mutspec folder.
 
-- [MutSpec-Annot](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_annot.md)
-- [MutSpec-Filter](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_filter.md)
-- [MutSpec-Split](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_split.md)
-- [MutSpec-Hotspot](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_hotspot.md)
-- [MutSpec-Stat](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_stat.md)
-- [MutSpec-NMF](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_nmf.md)
-- [MutSpec-Compare](https://github.com/IARC-bioinfo/mutspec/docs/mutspec_compare.md)
+- [MutSpec-Annot](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_annot.md)
+- [MutSpec-Filter](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_filter.md)
+- [MutSpec-Split](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_split.md)
+- [MutSpec-Hotspot](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_hotspot.md)
+- [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md)
+- [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_nmf.md)
+- [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_compare.md)
 
 
 ## Download test data
