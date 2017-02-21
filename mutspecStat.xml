@@ -62,6 +62,8 @@
     <regex match="Error"                       source="stderr"   level="fatal"    description="Read error message for more details" />
     <regex match="Erreur"                      source="both"     level="fatal"    description="Read error message for more details" />
     <regex match="Use of uninitialized value"  source="both"     level="fatal"    description="Read error message for more details" />
+    <regex match="errors in some of the runs"  source="both"     level="fatal"    description="Specify a lower maximum number of signatures to estimate" />
+    <regex match="Couldn't locate"  source="both"     level="fatal"    description="Read error message for more details" />
 </stdio>
 
 <help>
