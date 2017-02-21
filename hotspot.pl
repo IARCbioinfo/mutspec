@@ -95,7 +95,7 @@ If information provided on duplicate sample, infers somatics status of the varia
 	Option -i : INPUT : tabular file with sample name (or \"None\" if not provided)
 	Option -d : INPUT : directory name where VCF/tabular file are located
 	Option -o : OUTPUT: directory name
-	Option -s : OUTPUT: directory name for variant_summary
+	Option -s : OUTPUT: file name for variant_summary
 	Option -p : INPUT: Paires analysis (Y/N)
 	Option -h : describe the help\n\n"
 }

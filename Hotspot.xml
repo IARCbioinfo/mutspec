@@ -66,8 +66,9 @@ Figure 1 - Count variant frequency on a define dataset
 =======================================================
 
 .. image:: computefreq.png
-:height: 262
-:width: 562
+	:height: 262
+	:width: 562
+
 
 .. class:: infomark
 
@@ -141,7 +142,7 @@ If using categories, you need to prepare a **tabular file** associating the name
 Name the first column as Normal, the second column will be Tumor. Fill the columns with appropriate file names. You may include unmatched samples, but in this case use “NA” for missing Normal and Tumor files.
 
 +-------------------+-------------------+-------------------+
-|      Normal       |       Tumor      |     Replicates    |
+|      Normal       |       Tumor       |     Replicates    |
 +===================+===================+===================+
 |    Sample_1_N     |     Sample_1_T    |   Sample_1_TDup   |
 +-------------------+-------------------+-------------------+
@@ -167,9 +168,9 @@ Organize categories of samples by columns. You may use any names for columns (us
 +-------------------+-------------------+-------------------+-------------------+
 |    Category_1     |    Category_2     |     Category_3    |    Category_N     |
 +===================+===================+===================+===================+
-|     Sample_1      |    Sample_2     |      Sample_3     |     Sample_4      |
+|     Sample_1      |      Sample_2     |      Sample_3     |     Sample_4      |
 +-------------------+-------------------+-------------------+-------------------+
-|     Sample_5      |                |      Sample_7     |     Sample_8      |
+|     Sample_5      |                   |      Sample_7     |     Sample_8      |
 +-------------------+-------------------+-------------------+-------------------+
 |     Sample_9      |                   |                   |                   |
 +-------------------+-------------------+-------------------+-------------------+
@@ -244,8 +245,9 @@ Figure 2 - HotSpot workflow
 =============================
 
 .. image:: hotspot.png
-:height: 412
-:width: 562
+	:height: 412
+	:width: 562
+
 
 .. class:: infomark
 
@@ -258,8 +260,9 @@ Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs
 =========================================================
 
 .. image:: annotation.png
-:height: 412
-:width: 562
+	:height: 412
+	:width: 562
+
 
 .. class:: infomark
 
@@ -276,15 +279,6 @@ Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs
 .. class:: infomark
 
 **For a variant annotated as Somatic, if it's find in the Tumor once (Tumor or Replicate) or twice (Tumor and Replicate), it will be annotated as Somatic **NA** if there is **no** a normal sample for this individual**
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-**Code**
-
-The source code is available on `GitHub`__
-
-.. __: https://github.com/IARCbioinfo/mutspec.git
 
 </help>
 </tool>
