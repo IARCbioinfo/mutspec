@@ -1,21 +1,21 @@
 # MutSpec: mutation spectra analysis tool suite
 
-- [Description](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Description)
-- [Overview of MutSpec tools and workflow](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Overview of MutSpec tools and workflow)
-- [Getting Started](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Getting Started)
-- [MutSpec tools](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#MutSpec tools)
-	- [MutSpec-Annot](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_annot.md)
-	- [MutSpec-Filter](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_filter.md)
-	- [MutSpec-Split](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_split.md)
-	- [MutSpec-Hotspot](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_hotspot.md)
-	- [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_stat.md)
-	- [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_nmf.md)
-	- [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA/docs/mutspec_compare.md)
-- [Download test data](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Download test data)
-- [Galaxy installation](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Galaxy installation)
-- [Authors](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Authors)
-- [Citation](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#Citation)
-- [License](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#License)
+- [Description](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#description)
+- [Overview of MutSpec tools and workflow](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#overview-of-mutspec-tools-and-workflow)
+- [Getting Started](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#getting-started)
+- [MutSpec tools](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#mutspec-tools)
+	- [MutSpec-Annot](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_annot.md)
+	- [MutSpec-Filter](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_filter.md)
+	- [MutSpec-Split](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_split.md)
+	- [MutSpec-Hotspot](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_hotspot.md)
+	- [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md)
+	- [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_nmf.md)
+	- [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_compare.md)
+- [Download test data](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#download-test-data)
+- [Galaxy installation](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#galaxy-installation)
+- [Authors](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#authors)
+- [Citation](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#citation)
+- [License](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#license)
 
 ## Description
 
@@ -42,8 +42,8 @@ The different tools can be run using command lines and are also available on Gal
 
 ## Getting Started
 
-- [Prerequisites](https://github.com/IARC-bioinfo/mutspec/docs/prerequisites.md)
-- [Annovar installation](https://github.com/IARC-bioinfo/mutspec/docs/annovar_installation.md)
+- [Prerequisites](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/prerequisites.md)
+- [Annovar installation](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/annovar_installation.md)
 
 
 ## MutSpec tools:
