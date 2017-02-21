@@ -37,8 +37,7 @@ The different tools can be run using command lines and are also available on Gal
 
 ## Overview of MutSpec tools and workflow
 
-![workflow](mutspecPipeline.png)
-
+![workflow](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspecPipeline.png)
 
 ## Getting Started
 
