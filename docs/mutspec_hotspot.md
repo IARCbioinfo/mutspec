@@ -76,14 +76,14 @@ Organize categories of samples by columns. You may use any names for columns (us
 
 ###### Without provided an InfoFile
 
-If you don't provide an InfoFile, you can not make a pair analysis. (see [Figure 1](https://github.com/IARCbioinfo/mutspec/blob/master/computefreq.png))
+If you don't provide an InfoFile, you can not make a pair analysis. (see [Figure 1](computefreq.png))
 
 > Only one category will be consider by the tool to compute the frequency.
 
 ##### Pair (boolean)
 
 **If you choose a pair analysis, you must provide an InfoFile.**
->The tool will add an annotation on the statut of the variant as describe in [Figure 3](https://github.com/IARCbioinfo/mutspec/blob/master/annotation.png).
+>The tool will add an annotation on the statut of the variant as describe in [Figure 3](annotation.png).
 
 >You must provide an InfoFile that begin with "Normal".
 
@@ -94,7 +94,7 @@ If you don't provide an InfoFile, you can not make a pair analysis. (see [Figure
 
 #### Output
 
-HotSpot tool generates two files ([Figure 2](https://github.com/IARCbioinfo/mutspec/blob/master/hotspot.png)) :
+HotSpot tool generates two files ([Figure 2](hotspot.png)) :
 
 **1 - Variants_summary.vcf**:
 This file contains **all unique variants detected in the dataset**, annotated with counts and frequencies in each user-defined category and with sample name in which they were found.
@@ -104,11 +104,11 @@ This output is a collection that contains **all the input files annotated** with
 If working with the case scenario "Normal-Tumor-Duplicates", an additional annotation is included on variant germline or somatic status ([Figure 3](annotation.png)).
 
 #### Figure 2 - HotSpot workflow
-![Figure 2](https://github.com/IARCbioinfo/mutspec/blob/master/hotspot.png "Figure 2 - HotSpot workflow") 
+![Figure 2](hotspot.png "Figure 2 - HotSpot workflow") 
 >General example of HotSpot application
 
 #### Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs
-![Figure 3](https://github.com/IARCbioinfo/mutspec/blob/master/annotation.png "Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs") 
+![Figure 3](annotation.png "Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs") 
 
 >Example of annotation of variants in the case "Normal-Tumor-Replicates"
 
