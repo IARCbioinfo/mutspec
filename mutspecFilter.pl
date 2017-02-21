@@ -386,7 +386,7 @@ mutspecFilter - Filter a file annotated with MutSpec-Annot tool. Variants presen
 									 --segDup                      filter against genomic duplicate database
 									 --esp                         filter against Exome Sequencing Project database (only for human)
 									 --thG                         filter against 1000 genome database (onyl for human)
-			  -o,        --outfile <string>            name of output file
+			  -o,        --outfile <string>            path to output file
 			             --refGenome                   reference genome to use
 			             --pathAVDBList                path to the list of Annovar databases installed
 			             --filter                      path to a bed file
@@ -460,7 +460,7 @@ The reference genome to use.
 
 =item B<--outfile>
 
-the name of the output file
+path to output file
 
 =item B<--pathAVDBList>
 
