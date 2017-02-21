@@ -19,7 +19,7 @@ perl mutspecSplit.pl --file filename --column index
 
 List of parameters:
 
-| Parameter | Default value | Description          |
-|-----------|---------------|----------------------|
-| --file    |               | Input file to split |
-| --column  |               | Column number containing the sample ids (start to count from 1) |
+| Parameter | Description          |
+|-----------|----------------------|
+| --file    | Input file to split |
+| --column  | Column number containing the sample ids (start to count from 1) |

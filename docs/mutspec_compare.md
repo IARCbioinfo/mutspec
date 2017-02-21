@@ -29,4 +29,3 @@ List of parameters:
 | Published_Signature | Matrix containing a set of published signatures |
 | New_Signature       | Matrix containing the signatures identified by MutSpec-NMF |
 | Output_Folder       | Output directory |
-| --help              | Print help message |
