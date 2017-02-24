@@ -403,9 +403,6 @@ colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total
 matrixH_norm_melt$ContriSBS <- sapply(1:nrow(matrixH_norm_melt), function(x) { Contri2SignSBS(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
 colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total_SBS", "CountSBS_Contri")
 
-# # Calculate the count of SBS considering the error
-# matrixH_norm_melt$countError <- sapply(1:nrow(matrixH_norm_melt), function(x) { contriWithError(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
-
 # Save the matrix
 write.table(matrixH_norm_melt, file=output_matrixH_ggplot2, quote=F, sep="\t", col.names=T, row.names=F)
 
