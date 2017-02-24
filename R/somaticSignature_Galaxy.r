@@ -382,7 +382,7 @@ evar_round <- round(evar, digits=3) * 100
 
 if(is.null(opt$html))
 {
-  cat("\n", evar_round, "% of the variance explained in the data with", opt$nbSignature, "signatures\n\n")
+  cat("\n", evar_round, "% of the variance is explained with", opt$nbSignature, "signatures\n\n")
 }
 
 # Recover the total number of SBS per samples
@@ -419,7 +419,6 @@ if(ncol(matrixNMF) <= 30)
 {
   p2 <- p2 + theme(axis.text.x = element_text(angle=90))
 }
-
 
 # Base plot for the contribution of each samples in percentages
 p3 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -CountSBS_Contri), y=Percent_Contri, fill=Signature)) + geom_bar(stat="identity") + theme_classic() + theme(axis.text.x = element_blank()) + xlab("") + ylab("% of mutations")
@@ -536,7 +535,7 @@ if(! is.null(opt$html))
   write("<tr>", file=opt$html, append=TRUE)
   write("<th><h3>Signature composition</h3></th>", file=opt$html, append=TRUE)
   write("</tr>", file=opt$html, append=TRUE)
-  write(paste0("<tr><td>", evar_round, "% of the variance explained in the data with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
+  write(paste0("<tr><td>", evar_round, "% of the variance is explained with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
   write("<tr height=15></tr>", file=opt$html, append=TRUE)
   write(paste0("<tr><td> <center> <a href=", output_matrixW_html ,">Composition somatic mutation (input matrix for the tool MutSpec-Compare)</a><center></td></tr>"), file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)
