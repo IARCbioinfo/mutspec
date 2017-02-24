@@ -56,6 +56,6 @@ install.packages(https://cran.r-project.org/src/contrib/package_1.1.tar.gz, repo
 sudo pip install weblogo
 ```
 
-### Annovar (>= 2016Feb01)
+### Annovar (2016Feb01)
 
 The latest release can be downloaded at http://www.openbioinformatics.org/annovar/annovar_download_form.php after free registration.
