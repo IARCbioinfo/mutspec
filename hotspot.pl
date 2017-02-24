@@ -721,7 +721,7 @@ sub CheckInfoFile{
 	my @col=split("\t",$head);		#column if the header
 	my $nb=0;						#Number of line, corresponding to number of individuals
 	my @categories=split("\t",$head);	#Several categories presents in this file
-	if($col[0]=~/^Normal$/i && $p eq "pair"){			#Case Normal-Tumor-Duplicates
+	if($col[0]=~/^Normal$/i && $p eq "Y"){			#Case Normal-Tumor-Duplicates
 		if($#col eq 0){					#Case normal
 			$type="Normal";						#Not differenciated serie
 			while ( defined( my $line = <IN> ) ) {
