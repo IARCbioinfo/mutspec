@@ -2379,7 +2379,6 @@ sub createWriteFigs
 	# Bar chart for trinucleotide context on coding strand
 	`Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$sample/$sample-StrandedSignatureCount.txt $folderFigure/Stranded_Analysis/$sample/$sample-StrandedSignatureCount $folder_temp/$sample-StrandedSignatureCount Count`;
 
-	# `/home/maude/galaxy/database/dependencies/R/3.2.1/iuc/package_r_3_2_1/e686eb95873b/bin/Rscript $pathRScriptTxnSB
 	`Rscript $pathRScriptTxnSB $folderFigure/Stranded_Analysis/$sample/$sample-StrandedSignaturePercent.txt $folderFigure/Stranded_Analysis/$sample/$sample-StrandedSignaturePercent $folder_temp/$sample-StrandedSignaturePercent Percent`;
 
 	# Bar plot for representing the sequence context (NMF like style)
