@@ -27,7 +27,7 @@ cpan
 nolock_cpan[1]> install Module::Name
 ```
 
-### R (>= v3.1.2)  
+### R (v3.2.x)
 ```bash
 sudo apt-get install r-base r-base-dev
 ```
