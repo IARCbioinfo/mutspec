@@ -280,5 +280,20 @@ Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs
 
 **For a variant annotated as Somatic, if it's find in the Tumor once (Tumor or Replicate) or twice (Tumor and Replicate), it will be annotated as Somatic **NA** if there is **no** a normal sample for this individual**
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+** Contact **
+
+robitaillea@students.iarc.fr; ardinm@fellows.iarc.fr; cahaisv@iarc.fr
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
+
 </help>
 </tool>
