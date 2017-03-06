@@ -56,7 +56,7 @@ our $pathRScriptMutSpectrum = "$path_R_Scripts/R/mutationSpectra_Galaxy.r";
 
 
 # The path for saving the files with enough mutations for calculating the statistics;
-our $folderCheckedForStat = "$pwd/folder_checked_$filename";
+our $folderCheckedForStat = "$pwd/folder_checked";
 if(!-e $folderCheckedForStat) { mkdir($folderCheckedForStat) or die "$!: $folderCheckedForStat\n"; }
 
 # Output dir with all the results
