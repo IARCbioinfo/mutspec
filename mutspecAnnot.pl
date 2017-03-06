@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecAnnot.pl           #
-# Last update: 01/02/17             #
+# Last update: 02/03/17             #
 #-----------------------------------#
 
 use strict;
@@ -132,10 +132,18 @@ sub CheckFlags
 		print STDERR "You forget to specify the path to the list of Annovar databases!!!\nPlease specify it with the flag --pathAVDBList\n";
 		exit;
 	}
+	else { $listAVDB = "$pathAVDBList/${refGenome}_listAVDB.txt" }
 
 	# If no temp folder is specified write the result in the current path
 	if($folder_temp eq "empty") { $folder_temp   = "$pwd/TEMP_MutationalAnalysis_$filename"; }
 	if(!-e $folder_temp)        { mkdir($folder_temp) or die "$!: $folder_temp\n"; }
+
+	# Verify listAVDB is not empty
+	if($listAVDB eq "")
+	{
+		print STDERR "Path to the text file containing the list of Annovar databases installed is not specified !!!\n";
+		exit;
+	}
 }
 
 ## Format the file in the correct format if they are vcf or MuTect output and recover the column positions
@@ -1244,7 +1252,7 @@ mutspec-Annot
                    --interval <interger>         the number of bases for the sequence context
         -o,        --outfile <string>            output directory for the result. If none is specify the result will be write in the same directory as the input file
         -AVDB      --pathAnnovarDB <string>      the path to Annovar database and the files with the chromosome size
-                   --pathAVDBList                the path to the list of AV databases installed
+                   --pathAVDBList                the path to a text file containing the list of Annovar databases installed
         -temp      --pathTemporary <string>      the path for saving the temporary files
                    --fullAnnotation <string>     recover all Annovar annotations (yes) or only the minimum for MutSpec-Stat (no)
                    --max_cpu <integer>           number of CPUs to be used for the annotation
@@ -1256,7 +1264,7 @@ Function: automatically run a pipeline on a list of variants and annote them usi
           mutspecannot.pl --refGenome hg19 --interval 10 --outfile output_directory --pathAnnovarDB path_to_annovar_database --pathAVDBList path_to_the_list_of_annovar_DB --temp path_to_temporary_directory --fullAnnotation yes|no input
 
 
- Version: 02-2017 (February 2017)
+ Version: 03-2017 (March 2017)
 
 
 =head1 OPTIONS
@@ -1274,7 +1282,6 @@ print the complete manual of the program.
 =item B<--verbose>
 
 use verbose output.
-
 
 =item B<--refGenome>
 
@@ -1294,7 +1301,7 @@ the path to the directory containing the Annovar databases and the files with th
 
 =item B<--pathAVDBList>
 
-the path to a texte file containing the list of the Annovar databases installed.
+the path to a text file containing the list of Annovar databases installed.
 
 =item B<--pathTemporary>
 
