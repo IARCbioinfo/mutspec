@@ -109,7 +109,7 @@ Variants containing the string REJECT in the judgement column or not passing MuT
 
 .. class:: infomark
 
-For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------

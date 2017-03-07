@@ -40,7 +40,7 @@ The tool supports different column names (**names are case-sensitive**) dependin
 For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
 Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from MutSpect-Annot output. 
 
-For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
 #### Output
@@ -96,7 +96,7 @@ Set this parameter to "no" if your analysis includes millions of variants and yo
 
 - --max_cpu
 
-Annotated large files may be time consuming. For example, annotating a file of more than 25,000 variants takes 1 hour using 1 CPU (2.6 GHz),
+Annotating large files may be time consuming. For example, annotating a file of more than 25,000 variants takes 1 hour using 1 CPU (2.6 GHz),
 while annotating this file using 8 CPUs takes only 5 minutes.  
 
 Recommanded number of CPUs to use:  
