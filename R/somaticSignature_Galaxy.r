@@ -415,9 +415,12 @@ p2 <- p2 + ylab("Number of mutations") + xlab("Samples")
 # Remove the x axis line
 p2 <- p2 + theme(axis.line.x=element_blank())
 # Add sample names
-if(ncol(matrixNMF) <= 30)
+if(ncol(matrixNMF) <= 35)
 {
   p2 <- p2 + theme(axis.text.x = element_text(angle=90))
+} else
+{
+  p2 <- p2 + theme(axis.text.x = element_blank())
 }
 
 # Base plot for the contribution of each samples in percentages
