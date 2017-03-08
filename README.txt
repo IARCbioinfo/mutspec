@@ -1,6 +1,6 @@
-==============================
-          MutSpec-Suite        
-==============================
+======================================================================
+          MutSpec-Suite: Readme file for Galaxy installation        
+======================================================================
 
 Created by Maude Ardin and Vincent Cahais (Mechanisms of Carcinogenesis Section, International Agency for Research on Cancer F69372 Lyon France,
 http://www.iarc.fr/)
