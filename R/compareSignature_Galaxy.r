@@ -16,7 +16,7 @@
 # Print a usage message if there is no argument pass to the command line
 #-------------------------------------------------------------------------------
 args <- commandArgs(TRUE)
-usage <- function() 
+usage <- function()
 {
   msg <- paste0('Usage:\n',
                ' compareSignature_Galaxy.r Published_Signature New_Signature Output_Folder\n'
@@ -61,7 +61,7 @@ dataFrame1 <- read.table(published_signature_file, header=T, sep="\t")
 # Remove the first three colmumns (Substitution Type, Trinucleotide  Somatic, Mutation Type)
 dataFrame1 <- dataFrame1[,4:ncol(dataFrame1)]
 matrix1    <- as.matrix(dataFrame1)
-  
+
 # Unkown signatures
 dataFrame2 <- read.table(unknown_signature_file, header=T, sep="\t")
 # Remove the first two columns (alteration, context)
@@ -78,7 +78,7 @@ cosine_res <- cosine(input_matrix_cos)
 # Keep only the comparison between the two matrices
 nbSign            <- ncol(matrix1)+1 # +1 for havng the first signature of the matrix1
 cosine_res_subset <- cosine_res[nbSign:nrow(cosine_res), 1:ncol(matrix1)]
-  
+
 # Save the matrix
 write.table(cosine_res_subset, file=output_cosineRes, quote=F, sep="\t", col.names=T, row.names=T)
 
@@ -90,12 +90,12 @@ colnames(cosineRes_subset_melt) <- c("Unknown_Signatures", "Published_Signatures
 cosineRes_subset_melt$Published_Signatures <- as.character(cosineRes_subset_melt$Published_Signatures)
 #Then turn it back into an ordered factor
 cosineRes_subset_melt$Published_Signatures <- factor(cosineRes_subset_melt$Published_Signatures, levels=rev(unique(cosineRes_subset_melt$Published_Signature)))
-  
+
 # Base plot: heatmap
 p1 <- ggplot(cosineRes_subset_melt, aes(x=Published_Signatures, y=Unknown_Signatures, fill=Similarity)) + geom_tile(colour="yellow") +scale_fill_gradientn(colours=c("yellow", "red")) + theme_classic()
-  
+
 # Rename the signatures
-if(basename(published_signature_file) == "Frequency-COSMICv72-Hupki.txt")
+if(basename(published_signature_file) == "Frequency-COSMIC30-Hupki.txt")
 {
   p1 <- p1 + scale_x_discrete(breaks = c("Signature.1", "Signature.2", "Signature.3", "Signature.4", "Signature.5", "Signature.6", "Signature.7", "Signature.8", "Signature.9",
                                          "Signature.10", "Signature.11", "Signature.12", "Signature.13", "Signature.14", "Signature.15", "Signature.16", "Signature.17",
