@@ -5,6 +5,8 @@ Computes the similarity between the signatures identified by MutSpec-NMF and a s
 #### Input format
 
 - A matrix containing the signatures identified by MutSpec-NMF.  
+The input matrix can be found in MutSpec-NMF ouput folder: NMF/Files/MatrixW-Normto100.txt  
+
 - A matrix containing a set of published signatures.  
 
 Two set of published signatures are provided:
