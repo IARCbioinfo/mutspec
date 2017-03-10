@@ -8,7 +8,7 @@ VCF(s) (version 4.1 and 4.2) or tab-delimited text file from various variant cal
 
 Filenames must be &#60;= 31 characters and should not contains "." in their suffix.
 
-Files should contain at least four columns describing for each variant: the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order.
+Files should contain at least four columns describing for each variant: the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order and other columns may be present.
 
 If multiple input files are specified as input for the tool, they should be from the **same genome build** and in the **same format**.
 
@@ -37,9 +37,6 @@ The tool supports different column names (**names are case-sensitive**) dependin
 - `custom`:     Chromosome Start Wild_Type Mutant
 
 
-For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
-Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from MutSpect-Annot output. 
-
 For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
@@ -49,6 +46,9 @@ The output is a tabular text file containing the retrieved annotations in the fi
 
 Only classic chromosomes are considered for the annotation, all other chromosomes are excluded from MutSpec-Annot output.
 For example for human genome only chr1 to chrY are annotated.
+
+For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
+Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from MutSpect-Annot output. 
 
 
 The minimum annotations retrieved are:
