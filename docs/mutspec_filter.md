@@ -25,7 +25,7 @@ List of parameters:
 | --esp     | false         | Remove variants present at frequency > 0.001 in the Exome Sequencing Project database **(only valid for human genomes)** |
 | --thG     | false         | Remove variants present at frequency > 0.001 in the 1000 genome database **(only valid for human genomes)** |
 | --exac    | false         | Remove variants present at frequency > 0.001 in the EXome Agregate Consortium database **(only valid for human genomes)** |
-| --filter  |  				| Path to VCFs or BED files to filter against |
+| --filter  |  				| Path to one VCF or BED file to filter against |
 | input     |  				| Input file to filter |
 | --outfile |  				| Path to output file |
 | --help    |               | Print help message |
