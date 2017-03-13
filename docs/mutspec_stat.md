@@ -67,12 +67,12 @@ List of parameters with default values:
 | --refGenome        |                                      | Name of the reference genome |
 | --pathRscript      |                                      | Path to mutspec R scripts |
 | --pathSeqRefGenome |                                      | Path to reference genome fasta files (one per chromosomes) |
-| input_folder       |                                      | Input folder |
 | --outfile          | input directory                      | Output directory |
 | --temp             | directory in which the script is run | Path for saving temporary files |
 | --poolData         | false                                | Calculate statistics on the sample pool |
 | --reportSample     | false                                | Generate an Excel report for each sample |
 | --help             |                                      | Print help message |
+| input_folder       |                                      | Input folder |
 
 
 By default, one output Excel file will be generated with statistics of each sample shown in different datasheets.  
