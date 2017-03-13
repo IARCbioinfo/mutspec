@@ -9,6 +9,7 @@
 	- [MutSpec-Split](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_split.md)
 	- [MutSpec-Hotspot](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_hotspot.md)
 	- [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md)
+	- [MutSpec-NMF_Estimate_Signatures](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_nmfEstimateSig.md)
 	- [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_nmf.md)
 	- [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_compare.md)
 - [Download test data](https://github.com/IARCbioinfo/mutspec/tree/modifs_MA#download-test-data)
