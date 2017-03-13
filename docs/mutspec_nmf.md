@@ -16,7 +16,7 @@ The input matrix can be found in MutSpec-Stat ouput folder: Mutational_Analysis/
 #### Usage
 
 ```R
-Rscript R/somaticSignature_Galaxy.r --input outfile_MutSpec-Stat/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt --nbSignature 2 --cpu 8 --output output_dir
+Rscript R/somaticSignature_Galaxy.r --input outfolder_MutSpec-Stat/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt --nbSignature 2 --cpu 8 --output output_dir
 ```
 
 List of parameters:

@@ -21,7 +21,7 @@ Heatmap showing the cosine similarity between the signatures identified by MutSp
 #### Usage
 
 ```R
-Rscript R/compareSignature_Galaxy.r Frequency-COSMICv72-Hupki.txt output_dir_MutSpec-NMF/NMF/Files/MatrixW-Inputggplot2.txt output_dir_MutSpec-NMF/NMF/
+Rscript R/compareSignature_Galaxy.r Frequency-COSMICv72-Hupki.txt outfolder_MutSpec-NMF/NMF/Files/MatrixW-Inputggplot2.txt output_dir_MutSpec-NMF/NMF/
 ```
 
 List of parameters:

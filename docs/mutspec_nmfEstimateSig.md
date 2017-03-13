@@ -23,7 +23,7 @@ The original data are shuffled for comparing the quality measures obtained with 
 #### Usage
 
 ```R
-Rscript R/estimateSign_Galaxy.r --input outfile_MutSpec-Stat/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt --stop 8 --cpu 8 --output estimate_signatures.png
+Rscript R/estimateSign_Galaxy.r --input outfolder_MutSpec-Stat/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt --stop 8 --cpu 8 --output estimate_signatures.png
 ```
 
 List of parameters:
