@@ -1,0 +1,242 @@
+<tool id="hotspot" name="MutSpec HotSpot" version="0.1" hidden="false">
+<description>
+Compute variant frequency on a defined dataset
+</description>
+
+<requirements>
+    <requirement type="set_environment">SCRIPT_PATH</requirement>
+    <requirement type="package" version="5.18.1">perl</requirement>
+</requirements>
+
+
+<command>
+mkdir in;
+
+#for $f in $dataset_list
+ln -s "$f" "in/$f.name";
+#end for
+
+sh \$SCRIPT_PATH/hotspotconfig.sh in output outputsummary $infofile $pair
+
+
+</command>
+
+<inputs>
+<param name="dataset_list" type="data_collection" format="tabular" collection_type="list" label="Dataset List" optional="false" help="Select a dataset list/collection from your history" />
+<param name="infofile" type="data" optional="true" format="tabular" label="InfoFile containing input file name." help="See the documentation to format it correctly." />
+<param type="boolean" name="pair" checked="TRUE" truevalue="Y" falsevalue="N" label="Tumor-Normal(-Replicates) paired analysis? - If yes, you must provide an InfoFile with Normal-Tumor(-Replicates)." help="For additional annotation on germline or somatic variant status (see Figure 3)" />
+</inputs>
+
+<outputs>
+<data name="variants_summary" label="variants_summary.vcf" from_work_dir="outputsummary/variants_summary.vcf" format="tabular">
+<discover_datasets pattern="__name__" directory="outputsummary"/>
+</data>
+<collection name="annotated_output" type="list" label="Annotated_dataset">
+       <discover_datasets pattern="__name__" ext="tabular" directory="output"/>
+    </collection>
+</outputs>         
+
+<stdio>
+<regex match="Err :"
+source="both"
+level="fatal"
+description="Please read the doc" />
+
+<regex match="Program STOP"
+source="both"
+level="fatal"
+description="Please read the doc" />
+
+</stdio>
+
+<help>
+
+====================
+**What it does**
+====================
+
+Compute variant frequency in a list of samples. It can thus be used to identify hotspot mutations as well as systematic sequencing errors.
+Samples may be grouped by categories to extract variant frequency by user-defined categories. If working with tumor-normal paired samples, a paired analysis may be run to identify variants that are somatic or germline.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+==========
+**Input**
+==========
+Data :
+----------
+
+The tool accepts a **dataset collection of tabular files** in VCF (version 4.1 or 4.2) or in tab-delimited (TAB) format.
+
+.. class:: warningmark
+
+Filenames should not contains "." in their suffix.
+
+.. class:: infomark
+
+TIP: If your data is not TAB delimited, use *Text manipulation -> convert*
+
+.. class:: warningmark
+
+These files should contain at least four columns describing for each variant, the chromosome number, the start genomic position, the reference allele and the alternate allele
+
+.. class:: infomark
+
+You should thus **create a dataset list** even when using one file (see Galaxy help to learn `how to create a dataset list`__)
+
+.. __: https://wiki.galaxyproject.org/Histories#Dataset_Collections
+
+.. class:: warningmark
+
+All input files must **have the same format**.    
+
+.. class:: warningmark 
+
+The tool supports different column names (**names are case-sensitive**) depending on the source file as follows:
+
+**mutect** :     contig position ref_allele alt_allele
+
+**vcf** :        CHROM POS REF ALT
+
+**cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
+
+**icgc** :       chromosome chromosome_start reference_genome_allele mutated_to_allele
+
+**tcga** :       Chromosome Start_position Reference_Allele Tumor_Seq_Allele2
+
+**ionTorrent** : chr Position Ref Alt            
+
+**proton** :     Chrom Position Ref Variant        
+
+**varScan2** :   Chrom Position Ref VarAllele
+
+**annovar** :    Chr Start Ref Obs                 
+
+**custom** :     Chromosome Start Wild_Type Mutant
+
+.. class:: infomark
+
+For MuTect and Mutect 2 output files, only confident calls are considered (variants containing the string REJECT in the judgement column are excluded).
+                                                
+----------
+InfoFile :
+----------
+
+**This file is mandatory for a paired analysis (Normal-Tumor)**
+
+A tabular file associating the name of the different input files in the collection to sample categories as shown below.
+
+-**If using a tumor-normal pair design (with or without tumor replicates)**
+
+Name the column as shown below (Tumor and Replicate are optional). Use exact file names (with ou without extension). If some samples are unmatched, use "NA" (mandatory for Normal column, not for Tumor or Replicates).
+
++-------------------+-------------------+-------------------+
+|      Normal       |       Tumor       |     Replicates    |
++===================+===================+===================+
+|    Sample_1_N     |     Sample_1_T    |   Sample_1_TDup   |
++-------------------+-------------------+-------------------+
+|    Sample_2_N     |     Sample_2_T    |                   |
++-------------------+-------------------+-------------------+
+|         NA        |     Sample_3_T    |                   |
++-------------------+-------------------+-------------------+
+
+
+.. class:: warningmark
+
+This tabular file **does not support empty field** for Normal and Tumor file, so please name "NA" a missing file.
+
+.. class:: infomark
+
+The files in the column "Replicates" will be considers as "Tumor" file for computing the variant frequency and count.
+
+-**If using user-defined of categories**
+
+Organize categories of samples by columns. You may use any names for columns (use preferably short names). 
+
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|    Category_1     |    Category_2     |     Category_3    |        ...        |    Category_N     |
++===================+===================+===================+===================+===================+
+|     Sample_1      |      Sample_2     |      Sample_3     |        ...        |     Sample_4      |
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|     Sample_5      |                   |      Sample_7     |        ...        |     Sample_8      |
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|     Sample_9      |                   |                   |                   |                   |
++-------------------+-------------------+-------------------+-------------------+-------------------+
+
+
+.. class:: infomark
+
+You can name your column as you want. It supports empty field.
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+==========
+**Output**
+==========
+
+HotSpot generates two files : (see **Figure 1**)
+
+**I - Variants_summary.vcf:**
+
++ This file contains **all unique variants detected in the dataset collection**, annotated with counts and frequencies in each user-defined category and with sample name in which they were found.
+
+
+
+**II - Annotated_dataset:**
+
++ This output is a collection that contains **all the input files annotated** with variant frequencies and counts in each user-defined category.
++ In the paired-analysis mode, an additional annotation is included on variant germline or somatic status (see Figure 2).
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+=============================
+Figure 1 - HotSpot workflow
+=============================
+
+.. image:: hotspot.png
+	:height: 412
+	:width: 562
+
+
+.. class:: infomark
+
+**General example of HotSpot application**
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+===================================================================
+Figure 2 - Rules for annotating variant status in paired-analysis
+===================================================================
+
+.. image:: annotation.png
+	:height: 412
+	:width: 562
+
+
+.. class:: infomark
+
+**Confirmed is used to describe mutations found in at least 2 samples.**
+
+.. class:: infomark
+
+**If no replicates are used, somatic not confirmed is used by default.**
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Contact**
+
+robitaillea@students.iarc.fr; ardinm@fellows.iarc.fr; cahaisv@iarc.fr
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
+
+</help>
+</tool>
