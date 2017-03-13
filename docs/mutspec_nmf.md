@@ -4,13 +4,13 @@ Extract mutational signatures composed of 96 SBS types (6 SBS types in their tri
 
 #### Input format
 
-Input matrix created with the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md).  
+Input matrix created with the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MAmaster/docs/mutspec_stat.md).  
 The input matrix can be found in MutSpec-Stat ouput folder: Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt
 
 #### Output
 
 - Composition of mutational signatures and contribution of each signature to each sample.
-- Input matrix for the tool [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_compare.md).
+- Input matrix for the tool [MutSpec-Compare](https://github.com/IARCbioinfo/mutspec/blob/master/docs/mutspec_compare.md).
 
 
 #### Usage

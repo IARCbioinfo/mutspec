@@ -92,7 +92,7 @@ List of parameters with default values:
 
 - --fullAnnotation
 
-Set this parameter to "no" if your analysis includes millions of variants and you are just interested in having a quick overview of the mutation spectrum. Only the annotations needed for the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md) will be added (annotation from refGene, the strand orientation and the sequence context).
+Set this parameter to "no" if your analysis includes millions of variants and you are just interested in having a quick overview of the mutation spectrum. Only the annotations needed for the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/master/docs/mutspec_stat.md) will be added (annotation from refGene, the strand orientation and the sequence context).
 
 - --max_cpu
 

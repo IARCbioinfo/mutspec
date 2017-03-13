@@ -1,11 +1,11 @@
 ### MutSpec-NMF_Estimate_Signatures
 
-Compute statistics for estimating the number of signatures to extract with [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_nmf.md).
+Compute statistics for estimating the number of signatures to extract with [MutSpec-NMF](https://github.com/IARCbioinfo/mutspec/blob/master/docs/mutspec_nmf.md).
 
 
 #### Input format
 
-Input matrix created with the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md).  
+Input matrix created with the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/master/docs/mutspec_stat.md).  
 The input matrix can be found in MutSpec-Stat ouput folder: Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt
 
 #### Output
