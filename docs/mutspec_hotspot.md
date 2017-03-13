@@ -121,7 +121,7 @@ If working with the case scenario "Normal-Tumor-Duplicates", an additional annot
 #### Usage
 
 ```perl
-perl mutspecStat.pl -i infoFile.txt -d input_dir/ -o output_dir/ -s variant_summary.vcf -p Y
+perl mutspecStat.pl -i "None" -d input_dir/ -o output_dir/ -s variant_summary.vcf -p Y
 ```
 >**All parameters are compulsory.**
 
