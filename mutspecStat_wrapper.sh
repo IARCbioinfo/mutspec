@@ -292,21 +292,21 @@ if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-CA-Proba
   echo "<td>WARNING: No sequence for C>A </br> </td>" >> $outfile
 else
   echo "<td><a href="Figures/WebLogo/$name/$name-CA.fa">$name-CA.fa</a><br/>" >> $outfile
-  echo "<img src="Figures/WebLogo/$name/$name-CA-Probability.png"/><br/></td>" >> $outfile
+  echo "<img src="Figures/WebLogo/$name/$name-CA-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 # C>G
 if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-CG-Probability.png" ]]; then
   echo "<td> WARNING: No sequence for C>G </br> </td>" >> $outfile
 else
   echo "<td><a href="Figures/WebLogo/$name/$name-CG.fa">$name-CG.fa</a><br/>" >> $outfile
-  echo "<img src="Figures/WebLogo/$name/$name-CG-Probability.png"/><br/></td>" >> $outfile
+  echo "<img src="Figures/WebLogo/$name/$name-CG-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 # C>T
 if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-CT-Probability.png" ]]; then
   echo "<td> WARNING: No sequence for C>T </br> </td>" >> $outfile
 else
  echo "<td><a href="Figures/WebLogo/$name/$name-CT.fa">$name-CT.fa</a><br/>" >> $outfile
- echo "<img src="Figures/WebLogo/$name/$name-CT-Probability.png"/><br/></td>" >> $outfile
+ echo "<img src="Figures/WebLogo/$name/$name-CT-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 echo "</tr>" >> $outfile
 
@@ -316,21 +316,21 @@ if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-TA-Proba
   echo "<td>WARNING: No sequence for T>A </br> </td>" >> $outfile
 else
   echo "<td><a href="Figures/WebLogo/$name/$name-TA.fa">$name-TA.fa</a><br/>" >> $outfile
-  echo "<img src="Figures/WebLogo/$name/$name-TA-Probability.png"/><br/></td>" >> $outfile
+  echo "<img src="Figures/WebLogo/$name/$name-TA-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 # T>C
 if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-TC-Probability.png" ]]; then
   echo "<td>WARNING: No sequence for T>C </br> </td>" >> $outfile
 else
   echo "<td><a href="Figures/WebLogo/$name/$name-TC.fa">$name-TC.fa</a><br/>" >> $outfile
-  echo "<img src="Figures/WebLogo/$name/$name-TC-Probability.png"/><br/></td>" >> $outfile
+  echo "<img src="Figures/WebLogo/$name/$name-TC-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 # T>G
 if [[ ! -e "$output_dir/Mutational_Analysis/Figures/WebLogo/$name/$name-TG-Probability.png" ]]; then
   echo "<td>WARNING: No sequence for T>G </br> </td>" >> $outfile
 else
   echo "<td><a href="Figures/WebLogo/$name/$name-TG.fa">$name-TG.fa</a><br/>" >> $outfile
-  echo "<img src="Figures/WebLogo/$name/$name-TG-Probability.png"/><br/></td>" >> $outfile
+  echo "<img src="Figures/WebLogo/$name/$name-TG-Probability.png width="600" "/><br/></td>" >> $outfile
 fi
 echo "</tr>" >> $outfile
 

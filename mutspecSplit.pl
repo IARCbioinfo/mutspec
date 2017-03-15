@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Vincent                   #
 # Script: mutspecSplit.pl           #
-# Last update: 01/07/14             #
+# Last update: 24/02/17             #
 #-----------------------------------#
 
 
@@ -15,19 +15,37 @@ our $file="";
 our $column="";
 our $path="";
 our $key="";
+our $help=0;
 
 
 GetOptions('file|f=s'		=>\$file,
-		   'key|k=s'      	=>\$key,
-		   'column|i=s'		=>\$column,
-		   'path|p=s'     	=>\$path);
+		       'column|i=s'	=>\$column,
+		       'help|h'     =>\$help) or do_help(); # 'key|k=s'      	=>\$key,
+
+if($help)
+{
+	do_help();
+}
+
+if ( ($file eq "") || ($column eq "") )
+{
+	do_help();
+}
+
+sub do_help
+{
+	print "Usage: mutspecSplit.pl --file <input_file> --column <value>\n
+	Option --file: Input file to split\n
+	Option --column: Column number containing the samples ids (start to count from 1)\n\n";
+	exit;
+}
 
 
 mkdir ("outputFiles") or die ("Erreur creation repertoire\n");
 # print $file,"\n", $key,"\n", $column,"\n", $path,"\n"; exit;
 
 my %tab;
-if ($column==0) {$column++;}
+if ($column==0) {$column++;} # Start to count from 1
 $column--;
 
 open(FILE, "$file") or die "cannot open $file\n";

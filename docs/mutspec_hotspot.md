@@ -101,7 +101,7 @@ This file contains **all unique variants detected in the dataset**, annotated wi
 
 **2 - Annotated_dataset**:
 This output is a collection that contains **all the input files annotated** with variant frequencies and counts in each user-defined category.
-If working with the case scenario "Normal-Tumor-Duplicates", an additional annotation is included on variant germline or somatic status ([Figure 3](annotation.png)).
+If working with the case scenario "Normal-Tumor-Duplicates", an additional annotation is included on variant germline or somatic status ([Figure 3](https://github.com/IARCbioinfo/mutspec/blob/master/annotation.png)).
 
 #### Figure 2 - HotSpot workflow
 ![Figure 2](https://github.com/IARCbioinfo/mutspec/blob/master/hotspot.png "Figure 2 - HotSpot workflow") 
@@ -121,7 +121,7 @@ If working with the case scenario "Normal-Tumor-Duplicates", an additional annot
 #### Usage
 
 ```perl
-perl mutspecStat.pl -i infoFile.txt -d input_dir/ -o output_dir/ -s variant_summary.vcf -p Y
+perl mutspecStat.pl -i None -d input_dir/ -o output_dir/ -s variant_summary.vcf -p Y
 ```
 >**All parameters are compulsory.**
 
@@ -129,7 +129,7 @@ List of parameters:
 
 | Parameter | Description                             |
 |-----------|-----------------------------------------|
-| -i        |  input file of category or "None" if not provided  |
+| -i        |  input file of category or None if not provided  |
 | -d        |  path to the directory of input VCF files          |
 | -o        |  path to the directory of output VCF files         |
 | -s        |  path to the output file variants_summary.vcf      |

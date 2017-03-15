@@ -27,7 +27,7 @@ cpan
 nolock_cpan[1]> install Module::Name
 ```
 
-### R (>= v3.1.2)  
+### R (v3.2.x)
 ```bash
 sudo apt-get install r-base r-base-dev
 ```
@@ -56,6 +56,6 @@ install.packages(https://cran.r-project.org/src/contrib/package_1.1.tar.gz, repo
 sudo pip install weblogo
 ```
 
-### Annovar (>= 2016Feb01)
+### Annovar (2016Feb01)
 
 The latest release can be downloaded at http://www.openbioinformatics.org/annovar/annovar_download_form.php after free registration.

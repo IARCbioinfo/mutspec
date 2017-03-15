@@ -1,6 +1,6 @@
-==============================
-          MutSpec-Suite        
-==============================
+======================================================================
+          MutSpec-Suite: Readme file for Galaxy installation        
+======================================================================
 
 Created by Maude Ardin and Vincent Cahais (Mechanisms of Carcinogenesis Section, International Agency for Research on Cancer F69372 Lyon France,
 http://www.iarc.fr/)
@@ -15,7 +15,7 @@ http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1011-z
 
 Test data: https://usegalaxy.org/u/maude-ardin/p/mutspectestdata
 
-Source code: https://github.com/IARCbioinfo/mutspec.git
+Source code: https://github.com/IARCbioinfo/mutspec
 
 
 ### Requirements

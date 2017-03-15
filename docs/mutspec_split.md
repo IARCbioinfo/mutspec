@@ -22,4 +22,5 @@ List of parameters:
 | Parameter | Description          |
 |-----------|----------------------|
 | --file    | Input file to split |
-| --column  | Column number containing the sample ids (start to count from 1) |
+| --column  | Column number containing the samples ids (start to count from 1) |
+| --help    | Print help message |

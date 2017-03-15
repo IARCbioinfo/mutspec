@@ -382,7 +382,7 @@ evar_round <- round(evar, digits=3) * 100
 
 if(is.null(opt$html))
 {
-  cat("\n", evar_round, "% of the variance explained in the data with", opt$nbSignature, "signatures\n\n")
+  cat("\n", evar_round, "% of the variance is explained with", opt$nbSignature, "signatures\n\n")
 }
 
 # Recover the total number of SBS per samples
@@ -403,9 +403,6 @@ colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total
 matrixH_norm_melt$ContriSBS <- sapply(1:nrow(matrixH_norm_melt), function(x) { Contri2SignSBS(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
 colnames(matrixH_norm_melt) <- c("Signature", "Sample", "Percent_Contri", "Total_SBS", "CountSBS_Contri")
 
-# # Calculate the count of SBS considering the error
-# matrixH_norm_melt$countError <- sapply(1:nrow(matrixH_norm_melt), function(x) { contriWithError(matrixH_norm_melt$Total_SBS[x], matrixH_norm_melt$Percent_Contri[x]) } )
-
 # Save the matrix
 write.table(matrixH_norm_melt, file=output_matrixH_ggplot2, quote=F, sep="\t", col.names=T, row.names=F)
 
@@ -418,11 +415,13 @@ p2 <- p2 + ylab("Number of mutations") + xlab("Samples")
 # Remove the x axis line
 p2 <- p2 + theme(axis.line.x=element_blank())
 # Add sample names
-if(ncol(matrixNMF) <= 30)
+if(ncol(matrixNMF) <= 35)
 {
   p2 <- p2 + theme(axis.text.x = element_text(angle=90))
+} else
+{
+  p2 <- p2 + theme(axis.text.x = element_blank())
 }
-
 
 # Base plot for the contribution of each samples in percentages
 p3 <- ggplot(matrixH_norm_melt, aes(x=reorder(Sample, -CountSBS_Contri), y=Percent_Contri, fill=Signature)) + geom_bar(stat="identity") + theme_classic() + theme(axis.text.x = element_blank()) + xlab("") + ylab("% of mutations")
@@ -539,7 +538,7 @@ if(! is.null(opt$html))
   write("<tr>", file=opt$html, append=TRUE)
   write("<th><h3>Signature composition</h3></th>", file=opt$html, append=TRUE)
   write("</tr>", file=opt$html, append=TRUE)
-  write(paste0("<tr><td>", evar_round, "% of the variance explained in the data with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
+  write(paste0("<tr><td>", evar_round, "% of the variance is explained with ", opt$nbSignature, " signatures", "</td></tr>"), file=opt$html, append=TRUE)
   write("<tr height=15></tr>", file=opt$html, append=TRUE)
   write(paste0("<tr><td> <center> <a href=", output_matrixW_html ,">Composition somatic mutation (input matrix for the tool MutSpec-Compare)</a><center></td></tr>"), file=opt$html, append=TRUE)
   write("<tr>", file=opt$html, append=TRUE)

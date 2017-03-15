@@ -8,7 +8,7 @@ VCF(s) (version 4.1 and 4.2) or tab-delimited text file from various variant cal
 
 Filenames must be &#60;= 31 characters and should not contains "." in their suffix.
 
-Files should contain at least four columns describing for each variant: the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order.
+Files should contain at least four columns describing for each variant: the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order and other columns may be present.
 
 If multiple input files are specified as input for the tool, they should be from the **same genome build** and in the **same format**.
 
@@ -37,10 +37,7 @@ The tool supports different column names (**names are case-sensitive**) dependin
 - `custom`:     Chromosome Start Wild_Type Mutant
 
 
-For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
-Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from MutSpect-Annot output. 
-
-For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
 #### Output
@@ -49,6 +46,9 @@ The output is a tabular text file containing the retrieved annotations in the fi
 
 Only classic chromosomes are considered for the annotation, all other chromosomes are excluded from MutSpec-Annot output.
 For example for human genome only chr1 to chrY are annotated.
+
+For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
+Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from MutSpect-Annot output. 
 
 
 The minimum annotations retrieved are:
@@ -92,11 +92,11 @@ List of parameters with default values:
 
 - --fullAnnotation
 
-Set this parameter to "no" if your analysis includes millions of variants and you are just interested in having a quick overview of the mutation spectrum. Only the annotations needed for the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/modifs_MA/docs/mutspec_stat.md) will be added (annotation from refGene, the strand orientation and the sequence context).
+Set this parameter to "no" if your analysis includes millions of variants and you are just interested in having a quick overview of the mutation spectrum. Only the annotations needed for the tool [MutSpec-Stat](https://github.com/IARCbioinfo/mutspec/blob/master/docs/mutspec_stat.md) will be added (annotation from refGene, the strand orientation and the sequence context).
 
 - --max_cpu
 
-Annotated large files may be time consuming. For example, annotating a file of more than 25,000 variants takes 1 hour using 1 CPU (2.6 GHz),
+Annotating large files may be time consuming. For example, annotating a file of more than 25,000 variants takes 1 hour using 1 CPU (2.6 GHz),
 while annotating this file using 8 CPUs takes only 5 minutes.  
 
 Recommanded number of CPUs to use:  

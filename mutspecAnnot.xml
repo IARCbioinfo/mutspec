@@ -109,7 +109,7 @@ Variants containing the string REJECT in the judgement column or not passing MuT
 
 .. class:: infomark
 
-For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -177,6 +177,12 @@ Will produce::
      chr12  8082458    8082458    C    T    exonic        SLC2A3        nonsynonymous SNV     SLC2A3:NM_006931:exon6:c.G683A:p.R228Q     NA                                 rs200481428  0.000199681       NA             -       CCG      chr12       8082458         8082458       C                 T
      chr4   70156391   70156391   T    C    exonic        UGT2B28       nonsynonymous SNV     UGT2B28:NM_053039:exon5:c.T1172C:p.V391A   score=0.949699;Name=chr4:70035680  NA           0.000199681       NA             +       GTA      chr4        70156391        70156391      T                 C
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Contact**
+
+ardinm@fellows.iarc.fr; cahaisv@iarc.fr
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
