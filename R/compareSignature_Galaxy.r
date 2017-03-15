@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: compareSignature_Galaxy.r #
-# Last update: 29/10/15             #
+# Last update: 14/02/17             #
 #-----------------------------------#
 
 
@@ -16,7 +16,7 @@
 # Print a usage message if there is no argument pass to the command line
 #-------------------------------------------------------------------------------
 args <- commandArgs(TRUE)
-usage <- function() 
+usage <- function()
 {
   msg <- paste0('Usage:\n',
                ' compareSignature_Galaxy.r Published_Signature New_Signature Output_Folder\n'
@@ -61,7 +61,7 @@ dataFrame1 <- read.table(published_signature_file, header=T, sep="\t")
 # Remove the first three colmumns (Substitution Type, Trinucleotide  Somatic, Mutation Type)
 dataFrame1 <- dataFrame1[,4:ncol(dataFrame1)]
 matrix1    <- as.matrix(dataFrame1)
-  
+
 # Unkown signatures
 dataFrame2 <- read.table(unknown_signature_file, header=T, sep="\t")
 # Remove the first two columns (alteration, context)
@@ -78,7 +78,7 @@ cosine_res <- cosine(input_matrix_cos)
 # Keep only the comparison between the two matrices
 nbSign            <- ncol(matrix1)+1 # +1 for havng the first signature of the matrix1
 cosine_res_subset <- cosine_res[nbSign:nrow(cosine_res), 1:ncol(matrix1)]
-  
+
 # Save the matrix
 write.table(cosine_res_subset, file=output_cosineRes, quote=F, sep="\t", col.names=T, row.names=T)
 
@@ -90,23 +90,23 @@ colnames(cosineRes_subset_melt) <- c("Unknown_Signatures", "Published_Signatures
 cosineRes_subset_melt$Published_Signatures <- as.character(cosineRes_subset_melt$Published_Signatures)
 #Then turn it back into an ordered factor
 cosineRes_subset_melt$Published_Signatures <- factor(cosineRes_subset_melt$Published_Signatures, levels=rev(unique(cosineRes_subset_melt$Published_Signature)))
-  
+
 # Base plot: heatmap
 p1 <- ggplot(cosineRes_subset_melt, aes(x=Published_Signatures, y=Unknown_Signatures, fill=Similarity)) + geom_tile(colour="yellow") +scale_fill_gradientn(colours=c("yellow", "red")) + theme_classic()
-  
+
 # Rename the signatures
-if(basename(published_signature_file) == "Frequency-COSMICv72-Hupki.txt")
+if(basename(published_signature_file) == "Frequency-COSMIC30-Hupki.txt")
 {
   p1 <- p1 + scale_x_discrete(breaks = c("Signature.1", "Signature.2", "Signature.3", "Signature.4", "Signature.5", "Signature.6", "Signature.7", "Signature.8", "Signature.9",
                                          "Signature.10", "Signature.11", "Signature.12", "Signature.13", "Signature.14", "Signature.15", "Signature.16", "Signature.17",
                                          "Signature.18", "Signature.19", "Signature.20", "Signature.21", "Signature.22", "Signature.23", "Signature.24", "Signature.25",
                                          "Signature.26", "Signature.27", "Signature.28", "Signature.29", "Signature.30",
                                          "Signature.1.MEF", "Signature.2.MEF", "Signature.3.MEF", "Signature.5.MEF"),
-                              labels = c("(Age) Sign 1", "(AID/APOBEC) Sign 2", "(BRCA1/2) Sign 3", "(Smoking) Sign 4", "Sign 5", "(DNA MMR deficiency) Sign 6", "(UV) Sign 7",
-                                         "Sign 8", "(IgG) Sign 9", "(pol e) Sign 10", "(temozolomide) Sign 11", "Sign 12", "(AID/APOBEC) Sign 13", "Sign 14",
-                                         "(DNA MMR deficiency) Sign 15", "Sign 16", "Sign 17", "Sign 18", "Sign 19", "(DNA MMR deficiency) Sign 20", "Sign 21", "(AA) Sign 22",
-                                         "Sign 23", "(Aflatoxin) Sign 24", "Sign 25", "(DNA MMR deficiency) Sign 26", "Sign 27", "Sign 28", "(Tobacco chewing) Sign 29", "Sign 30",
-                                         "(AA) Sign 1 MEF", "(AID) Sign 2 MEF", "(BaP) Sign 3 MEF", "(MNNG) Sign 5 MEF")
+                              labels = c("(Age) Sig 1", "(AID/APOBEC) Sig 2", "(BRCA1/2) Sig 3", "(Smoking) Sig 4", "Sig 5", "(DNA MMR deficiency) Sig 6", "(UV) Sig 7",
+                                         "Sig 8", "(IgG) Sig 9", "(pol e) Sig 10", "(temozolomide) Sig 11", "Sig 12", "(AID/APOBEC) Sig 13", "Sig 14",
+                                         "(DNA MMR deficiency) Sig 15", "Sig 16", "Sig 17", "Sig 18", "Sig 19", "(DNA MMR deficiency) Sig 20", "Sig 21", "(AA) Sig 22",
+                                         "Sig 23", "(Aflatoxin) Sig 24", "Sig 25", "(DNA MMR deficiency) Sig 26", "Sig 27", "Sig 28", "(Tobacco chewing) Sig 29", "Sig 30",
+                                         "(AA) Sig 1 MEF", "(AID) Sig 2 MEF", "(BaP) Sig 3 MEF", "(MNNG) Sig 5 MEF")
                               )
 }
 

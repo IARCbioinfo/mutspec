@@ -5,21 +5,19 @@
 <requirements>
     <requirement type="set_environment">SCRIPT_PATH</requirement>
     <requirement type="package" version="5.18.1">perl</requirement>
-    <requirement type="package" version="3.1.2">R</requirement>
+    <requirement type="package" version="3.2.1">R</requirement>
+    <requirement type="package" version="2.11.1">fontconfig</requirement>
     <requirement type="package" version="1.7.1">numpy</requirement>
     <requirement type="package" version="0.1">mutspec</requirement>
 </requirements>
 
-<command interpreter="bash">
-	mutspecNmf_wrapper.sh
-	$html_file
-	"--nbSign $nbsign"
-	${refGenomeSource.source}
-	#if $refGenomeSource.source == "html":
-		${refGenomeSource.reportHTML}
-	#else
-		${refGenomeSource.matrix}
-	#end if
+<command interpreter="Rscript --no-save">
+    R/somaticSignature_Galaxy.r --nbSign $nbsign --cpu 8 --output ${html_file.files_path} --html $html_file
+    #if $refGenomeSource.source == "html":
+        --input ${refGenomeSource.reportHTML.extra_files_path}/Mutational_Analysis/Figures/Input_NMF/Input_NMF_Count.txt
+    #else
+        --input ${refGenomeSource.matrix}
+    #end if
 </command>
 
 <inputs>
@@ -40,7 +38,13 @@
 
 <outputs>
 	<data name="html_file" format="html" label="NMF result on ${on_string} ($nbsign signatures)" />
-</outputs> 
+</outputs>
+
+<stdio>
+    <regex match="Error"                            source="stderr"   level="fatal"    description="Read error message for more details" />
+    <regex match="Unable to create the directory"   source="stderr"   level="fatal"    description="Unable to create the directory" />
+    <regex match="Permission denied"                source="stderr"   level="fatal"    description="Read error message for more details" />
+</stdio>
 
 <help>
 
@@ -102,6 +106,20 @@ Matrices and graphs representing the composition of the mutation signatures foun
 |T[T>G]T |    12    |     8    |     1    |
 +--------+----------+----------+----------+
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Contact**
+
+ardinm@fellows.iarc.fr; cahaisv@iarc.fr
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
 
 </help>
 

@@ -17,10 +17,13 @@ perl $SCRIPT_PATH/mutspecAnnot.pl \
 	--outfile out \
 	--pathAVDBList $SCRIPT_PATH \
 	--temp "./temp" \
-	$* 2>&1
+	$*
 
 ls out/Mutational_Analysis/Annovar/
-cp out/Mutational_Analysis/Annovar/${name}.${refg}_multianno.txt $output
+
+if [ -e "out/Mutational_Analysis/Annovar/${name}.${refg}_multianno.txt" ]; then
+	cp out/Mutational_Analysis/Annovar/${name}.${refg}_multianno.txt $output
+fi
 
 exit 0
 

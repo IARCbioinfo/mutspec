@@ -34,10 +34,9 @@
 </outputs> 
 
 <stdio>
-    <regex match="ANNOVAR LOG FILE"
-           source="stdout"
-           level="fatal"
-           description="Read Annovar log file for more information" />
+    <regex match="Missing flag !"   source="stderr" level="fatal" description="You have forgotten to specify one or more arguments" />
+    <regex match="Error message:"   source="stderr" level="fatal" description="Read error message for more details" />
+    <regex match="ANNOVAR LOG FILE" source="stderr" level="fatal" description="Read Annovar log file for more information" />
 </stdio>
 
 <help>
@@ -47,6 +46,10 @@
 MutSpect-Annot provides functional annotations from `ANNOVAR software`__ (Feb 2016 version is provided here), as well as the strand transcript orientation (from refGene database) and sequence context of variants (extrated from the reference genome selected).
 
 .. __: http://www.openbioinformatics.org/annovar/
+
+.. class:: infomark
+
+MutSpect-Annot works for human, mouse and rat genomes.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -64,7 +67,11 @@ Filenames must be &#60;= 31 characters.
 
 .. class:: warningmark
 
-These files should contain at least four columns describing for each variant, the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order.
+Files should contain at least four columns describing for each variant: the chromosome number, the start genomic position, the reference allele and the alternate alleles. These columns can be in any order.
+
+.. class:: warningmark
+
+If multiple input files are specified they should be from the **same genome build** and in the **same format**.
 
 .. class:: warningmark 
 
@@ -72,7 +79,10 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 **mutect** :     contig position ref_allele alt_allele
 
-**vcf** :        CHROM POS REF ALT
+**vcf** :        version `4.1`__ and `4.2`__
+
+.. __: https://samtools.github.io/hts-specs/VCFv4.1.pdf
+.. __: https://samtools.github.io/hts-specs/VCFv4.2.pdf
 
 **cosmic** :     Mutation_GRCh37_chromosome_number Mutation_GRCh37_genome_position Description_Ref_Genomic Description_Alt_Genomic
 
@@ -86,21 +96,20 @@ The tool supports different column names (**names are case-sensitive**) dependin
 
 **varScan2** :   Chrom Position Ref VarAllele
 
+**varScan2 somatic** :   chrom position ref var
+
 **annovar** :    Chr Start Ref Obs                 
 
 **custom** :     Chromosome Start Wild_Type Mutant
 
 .. class:: infomark
 
-For MuTect and MuTect2 output files, only confident calls are considered (variants containing the string REJECT in the judgement column or not passing MuTect2 filters, are not annotated and excluded from the MutSpect-Annot output) as other calls are very likely to be dubious calls or artefacts.
+For MuTect and MuTect2 output files, only confident calls are considered as other calls are very likely to be dubious calls or artefacts.
+Variants containing the string REJECT in the judgement column or not passing MuTect2 filters are not annotated and excluded from the MutSpect-Annot output. 
 
 .. class:: infomark
 
-For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be remove before annotated the file.
-
-.. class:: warningmark
-
-If multiple input files are specified they should be from the **same genome build** and in the **same format**.
+For COSMIC and ICGC files, variants are reported on several transcripts. These duplicate variants need to be removed before annotating the file.
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -111,7 +120,8 @@ The output is a tabular text file, that contains the retrieved annotations in th
 
 .. class:: infomark
 
-Variants on chromosome M and random chromosomes are not considered for the annotation and excluded from MutSpec-Annot output.
+Only classic chromosomes are considered for the annotation, all other chromosomes are excluded from MutSpec-Annot output.
+For example for human genome only chr1 to chrY are annotated.
 
 The following annotations are retrieved:
 
@@ -166,6 +176,21 @@ Will produce::
      chr14  33290999   33290999   A    G    exonic        AKAP6         nonsynonymous SNV     AKAP6:NM_004274:exon13:c.A3980G:p.D1327G   NA                                 NA           NA                NA             +       GAC      chr14       33290999        33290999      A                 G
      chr12  8082458    8082458    C    T    exonic        SLC2A3        nonsynonymous SNV     SLC2A3:NM_006931:exon6:c.G683A:p.R228Q     NA                                 rs200481428  0.000199681       NA             -       CCG      chr12       8082458         8082458       C                 T
      chr4   70156391   70156391   T    C    exonic        UGT2B28       nonsynonymous SNV     UGT2B28:NM_053039:exon5:c.T1172C:p.V391A   score=0.949699;Name=chr4:70035680  NA           0.000199681       NA             +       GTA      chr4        70156391        70156391      T                 C
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Contact**
+
+ardinm@fellows.iarc.fr; cahaisv@iarc.fr
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
 
 
 </help>

@@ -1,6 +1,6 @@
-==============================
-          MutSpec-Suite        
-==============================
+======================================================================
+          MutSpec-Suite: Readme file for Galaxy installation        
+======================================================================
 
 Created by Maude Ardin and Vincent Cahais (Mechanisms of Carcinogenesis Section, International Agency for Research on Cancer F69372 Lyon France,
 http://www.iarc.fr/)
@@ -15,6 +15,7 @@ http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1011-z
 
 Test data: https://usegalaxy.org/u/maude-ardin/p/mutspectestdata
 
+Source code: https://github.com/IARCbioinfo/mutspec
 
 
 ### Requirements
@@ -63,7 +64,7 @@ Restart galaxy instance for changes in .loc file to take effect or reload it int
 ### Installation
 
 	# MutSpec-Stat and MutSpec-NMF
-By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and mutspecNmf_wrapper.sh to change this number
+By default 8 CPUs are used by these tools, but you may edit mutspecStat_wrapper.sh and mutspecNmf.xml to change this number
 to the maximum number of CPU available on your server.
 
 MutSpec-Stat and MutSpec-NMF tools allow parallel computations that are time consuming.

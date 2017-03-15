@@ -1,10 +1,12 @@
 #/usr/bin/perl
 
 #	~~~~	HOTSPOT tool	~~~~
-#	13/06/2016
+#	Creation date : 13/06/2016
+#	Last modification : 23/01/2017
 #	Alexis ROBITAILLE
 #	robitaillea@students.iarc.fr
 #	Version : 1.0
+#	International Agency for Research on Cancer (Lyon, France)
 
 #################
 #				#
@@ -25,7 +27,7 @@
 #
 #Output :1) Variants_Summary.vcf = One uniqu variant per line + annotation on the frequence of this variant in this dataset
 #			If input 2a : frequency in all the dataset
-#			If input 2b : frequency in the two separate series	
+#			If input 2b : frequency in the two separate series
 #		 2) Collection of the same input 2) files + annotation as describe below (frequency of variant in the dataset of differenciated or not series)
 #			If input 2c : Add annotation on somatic status of the variants
 ########################################################################################################################################
@@ -68,6 +70,11 @@ else {
 	exit;
 }
 if ( defined( $opts{p} ) ) {
+	if($opts{p}!~/^Y$/i && $opts{p}!~/^N$/i){
+		print "Err : Please enter a correct value for option -p\n";
+		do_help();
+		exit;
+	}
 	#print "-p $opts{p}\n";
 }
 else {
@@ -83,8 +90,9 @@ sub do_help {
 	HOTSPOT tool :
 The goal of this tool is to compute variant frequency in a define datasets.
 If information provided on duplicate sample, infers somatics status of the variants in this dataset.
+!!	A value for all the differents options is needed.	!!
 
-	Option -i : INPUT : tabular file with sample name
+	Option -i : INPUT : tabular file with sample name (or None if not provided)
 	Option -d : INPUT : directory name where VCF/tabular file are located
 	Option -o : OUTPUT: directory name
 	Option -s : OUTPUT: directory name for variant_summary
@@ -140,7 +148,7 @@ my %acceptedformat=(
 $InfoFile=$opts{i};						#Get the path to InfoFile
 
 if($InfoFile eq "None"){
-	if($opts{p} eq "pair"){
+	if($opts{p} eq "Y"){
 		print "Program STOP - You have to provide an InfoFile if you want to do a paired analysis\n";
 		exit;
 	}
@@ -182,8 +190,8 @@ if($InfoFile ne "None"){
 }
 else{
 	$type="SIMPLE";
-	@Files = GetAllFilesList( $opts{d} );	
-	my @files;	
+	@Files = GetAllFilesList( $opts{d} );
+	my @files;
 	foreach my $f (@Files){
 		my @tmp=split('/',$f);
 		push(@files,renam($tmp[$#tmp]));
@@ -240,12 +248,12 @@ foreach my $format (@filesformat){
 #	Get all the variant one time only in a table	#
 #####################################################
 my @uniquevariant;				#Table for store all the variants in an uniqu way
-my @uniquevariant2;				#Table for store all the variants in an uniqu way, the one with chr_random...
+my @uniquevariant2;				#Table for store all the variants in an uniqu way, the one with chrX, chr_random...
 my %uniqueline;					#line choose from a random file for a variant
 foreach my $name (keys %h){
 	foreach my $var (@{$h{$name}}){
 		$uniqueline{$var}=$hline{$name.$var};
-		if (!(grep {$_ eq $var} @uniquevariant)){
+		if ((!(grep {$_ eq $var} @uniquevariant)) && (!(grep {$_ eq $var} @uniquevariant2))){
 			my @tmp=split('\|',$var);
 			if($tmp[0]=~/chr\d+$/){
 				push(@uniquevariant,$var);
@@ -272,14 +280,14 @@ if($type ne "SIMPLE"){
 }
 
 
-if($opts{p} eq "pair"){
+if($opts{p} eq "Y"){
 	my @field=split("\t",$headInfoFile);
 	if($field[0]!~/^Normal$/){
 		print "Err : You must provide an InfoFile with first column name \"Normal\" if you want to do a paired analysis\n";
 		exit;
 	}
 	elsif($#field>2){
-		print "Err : You can't have more than 3 column (Normal, Tumor and Duplicates) if ou want to do a paired analysis\n";
+		print "Err : You can't have more than 3 column (Normal, Tumor and Duplicates) if you want to do a paired analysis\n";
 		exit;
 	}
 }
@@ -316,7 +324,7 @@ sub HotSpotv{
 		}
 	}
 	else{
-		if($opts{p} eq "pair"){												#Case Normal-Tumor-Duplicates
+		if($opts{p} eq "Y"){												#Case Normal-Tumor-Duplicates
 			my @header=split("\t",$headInfoFile);				#split the header of the InfoFile to have the categories name
 			foreach my $cate (keys %$cat){						#Foreach categorie describe in InfoFile
 				foreach my $name (@{$$cat{$cate}}){				#For each sample of this category
@@ -348,14 +356,14 @@ sub HotSpotv{
 				}
 			}
 		}
-		
+
 	}
 	return(\%count,\%nom);			#return the 2 HASHTABLE
 }
 
 #########################
 #	Header construction	#
-#########################		
+#########################
 my $headfinal;							#if mutect2, remove # of header, to obtain homogeneity with MutSpec Annot
 if($officialformat eq "mutect2"){
 	$headfinal=$head;
@@ -366,7 +374,7 @@ else{
 }
 if($type!~/^Normal-Tumor-Duplicates$/){							#All the case without case with duplicates
 	foreach my $c (@ordcat){										#Foreach ordered categries name
-		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";	#Add the future column in the header
+		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";	#Add the future column in the header
 	}
 }
 else{															#Case normal-tumor-duplicate
@@ -375,7 +383,7 @@ else{															#Case normal-tumor-duplicate
 		if($c eq $header[$#header]){				#$header[$#header] eq "Duplicates" --> If duplicates next because considers as the tumor
 			next;
 		}
-		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";
+		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";
 	}
 }
 
@@ -399,7 +407,7 @@ chdir($opts{s}) or die("Erreur chdir pour aller dans le répertoire $opts{s} \n"
 #			3 Name of the sample of the categorie where this variant was find
 #		else
 #			1 0
-#			2 0%
+#			2 0
 #			3 NA
 #	End
 #End
@@ -407,7 +415,7 @@ chdir($opts{s}) or die("Erreur chdir pour aller dans le répertoire $opts{s} \n"
 open(OUT, ">"."variants_summary.vcf") or die ("Unable to open output writing file variants_summary.vcf");
 print OUT $headfinal."\n";
 my %varsampleannotation;						#HASH K=var, V=information of the frequency of this variants in the differents categories
-my @uniquevariantsort= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @uniquevariant;
+my @uniquevariantsort= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @uniquevariant;
 push(@uniquevariantsort,@uniquevariant2);
 foreach my $var (@uniquevariantsort){					#Foreach variants
 	my $aecrire="";									#annotation on frequency
@@ -428,10 +436,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 					$concernsample.=$n.',';				#Concatenate
 				}
 				chop($concernsample);
-				$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+				$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 			}
 			else{
-				$aecrire.="\t0\t0 %\tNA";				#Else no sample of this categorie where the variant is find
+				$aecrire.="\t0\t0\tNA";				#Else no sample of this categorie where the variant is find
 			}
 		}
 	}
@@ -451,10 +459,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 						$concernsample.=$n.',';				#Concatenate
 					}
 					chop($concernsample);
-					$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+					$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 				}
 				else{
-					$aecrire.="\t0\t0 %\tNA";
+					$aecrire.="\t0\t0\tNA";
 				}
 			}
 			else{										#Case categorie Normal
@@ -467,10 +475,10 @@ foreach my $var (@uniquevariantsort){					#Foreach variants
 						$concernsample.=$n.',';				#Concatenate
 					}
 					chop($concernsample);
-					$aecrire.="\t".$$count{$var.$c}."\t".$perc." %\t".$concernsample;
+					$aecrire.="\t".$$count{$var.$c}."\t".$perc."\t".$concernsample;
 				}
 				else{
-					$aecrire.="\t0\t0 %\tNA";
+					$aecrire.="\t0\t0\tNA";
 				}
 			}
 		}
@@ -514,7 +522,7 @@ if($type ne "SIMPLE"){
 					push(@{$hannot{$k}},"Nabsent");
 				}
 			}
-			elsif($i==1){			
+			elsif($i==1){
 				if(${$$series{$k}}[$i] ne "NA"){				#if $i==1, case tumeur
 					foreach my $var (@{$h{${$$series{$k}}[$i]}}){	#Foreach variant of this tumor sample of this individual
 						push(@{$hannot{$k.$var}},"tumeur");
@@ -525,15 +533,15 @@ if($type ne "SIMPLE"){
 				}
 			}
 			elsif($i>1){							#if $i>1, case duplicates
-				if(${$$series{$k}}[$i] ne "NA"){	
+				if(${$$series{$k}}[$i] ne "NA"){
 					foreach my $var (@{$h{${$$series{$k}}[$i]}}){	#Foreach variant of this duplicates sample of this individual
 						push(@{$hannot{$k.$var}},"dup");
 					}
 				}
-				else{										#Si pas d'echantillons pour cette category pour cet individu	
+				else{										#Si pas d'echantillons pour cette category pour cet individu
 					push(@{$hannot{$k}},"Dabsent");
 				}
-			}	
+			}
 		}
 	}
 }
@@ -574,7 +582,7 @@ foreach my $n (keys %h){				#Foreach sample
 				push(@temp2,$tmp);
 			}
 		}							#It permit to class them by chromosome number without having warnings
-		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @temp;
+		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @temp;
 		push(@sortvar,@temp2);
 		foreach my $var (@sortvar){
 			print OUT $hline{$n.$var}.$varsampleannotation{$var}."\n";
@@ -593,45 +601,45 @@ foreach my $n (keys %h){				#Foreach sample
 				push(@temp2,$tmp);
 			}
 		}							#It permit to class them by chromosome number without having warnings
-		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$b))[1] <=> (split('\|',$b))[1] } @temp;
+		my @sortvar= sort { return (split(/r/,(split('\|',$a))[0]))[1] <=> (split(/r/,(split('\|',$b))[0]))[1] || (split('\|',$a))[1] <=> (split('\|',$b))[1] } @temp;
 		push(@sortvar,@temp2);
 		foreach my $var (@sortvar){
 			my $individu="";
 			my $annotation="";
 			my $confirmation="";
-			
+
 			my $normalsample="";
 			my $tumorsample="";
 			my $dupsample="";
-			
+
 			foreach my $tmp (keys %$series){		#Foreach individual
 				if ((grep {$_ eq $n} @{$$series{$tmp}})){	#Search individual where come from the file
 					$individu=$tmp;
 				}
 			}
-			
-			if((grep {$_=~/Nabsent/} @{$hannot{$individu}})){	
+
+			if((grep {$_=~/Nabsent/} @{$hannot{$individu}})){
 				$normalsample="false";
 			}
 			else{
 				$normalsample="true";
 			}
-			if((grep {$_=~/Tabsent/} @{$hannot{$individu}})){	
+			if((grep {$_=~/Tabsent/} @{$hannot{$individu}})){
 				$tumorsample="false";
 			}
 			else{
 				$tumorsample="true";
 			}
-			if((grep {$_=~/Tabsent/} @{$hannot{$individu}})){	
+			if((grep {$_=~/Tabsent/} @{$hannot{$individu}})){
 				$dupsample="false";
 			}
 			else{
 				$dupsample="true";
 			}
-			
-			
-			
-			
+
+
+
+
 			if (!(grep {$_=~/normal/} @{$hannot{$individu.$var}})){		#Not find in the normal file
 				if ((grep {$_=~/tumeur/} @{$hannot{$individu.$var}})){		#Find in the tumor file
 					if ((grep {$_=~/dup/} @{$hannot{$individu.$var}})){		#Find in the duplicate
@@ -642,7 +650,7 @@ foreach my $n (keys %h){				#Foreach sample
 						else{
 							$confirmation="NA";
 						}
-						
+
 					}
 					else{													#Not find in the duplicates
 						$annotation="Somatic";
@@ -667,22 +675,22 @@ foreach my $n (keys %h){				#Foreach sample
 				}
 			}
 			else{					#Find in the normal file
-				$annotation="Germline";			
+				$annotation="Germline";
 				$confirmation="";
 			}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			print OUT $hline{$n.$var}.$varsampleannotation{$var}."\t".$annotation."\t".$confirmation."\n"; #write for each file the annotation 
+
+
+
+
+
+
+
+
+
+			print OUT $hline{$n.$var}.$varsampleannotation{$var}."\t".$annotation."\t".$confirmation."\n"; #write for each file the annotation
 		}
 	}
-	
+
 	close(OUT);
 }
 
@@ -818,8 +826,8 @@ sub CheckInfoFile{
 			my @tabtmp=();
 			chomp($line);
 			my @infos = split("\t",$line);
-			
-			
+
+
 #			if($#col<$#infos){		#More column in the differents lines than in the header, impossible because defined number of categories, so not any line with pmore sample than categories in the header
 #				$type="error";
 #				$error_message="Err : You can not have lines with more column than the header, if not the name of the sample will not be assign to a category\n";
@@ -851,12 +859,12 @@ sub CheckInfoFile{
 #					}
 #				}
 #			}
-			
-			
-			
-			
-			
-			
+
+
+
+
+
+
 			if($#categories<$#infos){		#More column in the differents lines than in the header, impossible because defined number of categories, so not any line with pmore sample than categories in the header
 				$type="error";
 				$error_message="Err : You can not have lines with more column than the header, if not the name of the sample will not be assign to a category\n";
@@ -913,7 +921,7 @@ sub CheckInfoFile{
 			if($type eq "error"){
 				last;
 			}
-		}	
+		}
 	}
 	else{
 		foreach my $k (keys %series){
@@ -924,16 +932,16 @@ sub CheckInfoFile{
 					}
 				}
 			}
-		}	
+		}
 	}
 	if($type eq "Other"){
 		foreach my $cat (keys %category){
 			my @uniquesampletmp=();
-			
+
 			#print $cat."\n";
 			foreach my $name (@{$category{$cat}}){
 				#print "\t".$name."\n";
-				
+
 				if($name ne "NA"){
 					if (!(grep {$_ eq $name} @uniquesampletmp)){
 						push(@uniquesampletmp,$name);
@@ -952,7 +960,7 @@ sub CheckInfoFile{
 			print "\n";
 		}
 	}
-	
+
 	if($type eq "error"){
 		return($error_message, '0');
 	}
@@ -996,10 +1004,10 @@ sub GetFilesList {
 			if ( -f "$Path/$FileFound" ) {
 				push( @FilesList, "$Path/$FileFound" );
 			}
-	
+
 			# Treatment of directory
 			elsif ( -d "$Path/$FileFound" ) {
-	
+
 				# Recursive reshearch
 				push( @FilesList, GetFilesList("$Path/$FileFound") );
 			}
@@ -1074,7 +1082,7 @@ sub GetVar{
 					print "Err : Incorrect input file format. Please refer to the documentation\n";
 					exit;
 				}
-			}			
+			}
 			else {
 				 if($data[$chr]!~/^chr/i){
 				 	$data[$chr]="chr".$data[$chr];

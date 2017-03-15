@@ -30,7 +30,3 @@ hg38_ljb26_pp2hvar.txt	f
 hg38_cosmic70.txt	f
 hg38_exac03.txt	f
 hg38_exac03nontcga.txt	f
-hg38_exac03nonpsych.txt	f
-hg38_kaviar20150923.txt	f
-hg38_hrcr1.txt	f
-hg38_dbscsnv11.txt	f

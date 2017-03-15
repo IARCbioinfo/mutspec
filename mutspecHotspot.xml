@@ -24,7 +24,7 @@ sh \$SCRIPT_PATH/hotspotconfig.sh in output outputsummary $infofile $pair
 <inputs>
 <param name="dataset_list" type="data_collection" format="tabular" collection_type="list" label="Dataset List" optional="false" help="Select a dataset list/collection from your history" />
 <param name="infofile" type="data" optional="true" format="tabular" label="InfoFile containing input file name." help="See the documentation to format it correctly." />
-<param type="boolean" name="pair" checked="TRUE" truevalue="pair" falsevalue="nopair" label="Tumor-Normal(-Replicates) paired analysis? - If yes, you must provide an InfoFile with Normal-Tumor(-Replicates)." help="For additional annotation on germline or somatic variant status (see Figure 3)" />
+<param type="boolean" name="pair" checked="TRUE" truevalue="Y" falsevalue="N" label="Tumor-Normal(-Replicates) paired analysis? - If yes, you must provide an InfoFile with Normal-Tumor(-Replicates)." help="For additional annotation on germline or somatic variant status (see Figure 3)" />
 </inputs>
 
 <outputs>
@@ -55,23 +55,8 @@ description="Please read the doc" />
 **What it does**
 ====================
 
-HotSpot computes variant frequencies in a defined dataset (see **Figure 1**).
-
-The dataset is defined by a collection of sample-specific lists of variants.
-Frequencies can be calculated on the entire collection, as well as by user-defined categories of samples.
-Users can define categories using an information file (see examples in the input section below).
-
-=======================================================
-Figure 1 - Count variant frequency on a define dataset
-=======================================================
-
-.. image:: computefreq.png
-:height: 262
-:width: 562
-
-.. class:: infomark
-
-**Example of HotSpot application on a series where there is one category made of three input variant file (Sample 1,2 and 3)**
+Compute variant frequency in a list of samples. It can thus be used to identify hotspot mutations as well as systematic sequencing errors.
+Samples may be grouped by categories to extract variant frequency by user-defined categories. If working with tumor-normal paired samples, a paired analysis may be run to identify variants that are somatic or germline.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -82,6 +67,10 @@ Data :
 ----------
 
 The tool accepts a **dataset collection of tabular files** in VCF (version 4.1 or 4.2) or in tab-delimited (TAB) format.
+
+.. class:: warningmark
+
+Filenames should not contains "." in their suffix.
 
 .. class:: infomark
 
@@ -133,15 +122,16 @@ For MuTect and Mutect 2 output files, only confident calls are considered (varia
 InfoFile :
 ----------
 
-If using categories, you need to prepare a **tabular file** associating the name of the different input files to sample categories as follows: 
+**This file is mandatory for a paired analysis (Normal-Tumor)**
 
+A tabular file associating the name of the different input files in the collection to sample categories as shown below.
 
-**If using a tumor-normal pair design (with or without tumor replicates)**
+-**If using a tumor-normal pair design (with or without tumor replicates)**
 
-Name the first column as Normal, the second column will be Tumor. Fill the columns with appropriate file names. You may include unmatched samples, but in this case use “NA” for missing Normal and Tumor files.
+Name the column as shown below (Tumor and Replicate are optional). Use exact file names (with ou without extension). If some samples are unmatched, use "NA" (mandatory for Normal column, not for Tumor or Replicates).
 
 +-------------------+-------------------+-------------------+
-|      Normal       |       Tumor      |     Replicates    |
+|      Normal       |       Tumor       |     Replicates    |
 +===================+===================+===================+
 |    Sample_1_N     |     Sample_1_T    |   Sample_1_TDup   |
 +-------------------+-------------------+-------------------+
@@ -150,7 +140,6 @@ Name the first column as Normal, the second column will be Tumor. Fill the colum
 |         NA        |     Sample_3_T    |                   |
 +-------------------+-------------------+-------------------+
 
-.
 
 .. class:: warningmark
 
@@ -160,61 +149,25 @@ This tabular file **does not support empty field** for Normal and Tumor file, so
 
 The files in the column "Replicates" will be considers as "Tumor" file for computing the variant frequency and count.
 
-**If using any type of categories (one or more categories)**
+-**If using user-defined of categories**
 
 Organize categories of samples by columns. You may use any names for columns (use preferably short names). 
 
-+-------------------+-------------------+-------------------+-------------------+
-|    Category_1     |    Category_2     |     Category_3    |    Category_N     |
-+===================+===================+===================+===================+
-|     Sample_1      |    Sample_2     |      Sample_3     |     Sample_4      |
-+-------------------+-------------------+-------------------+-------------------+
-|     Sample_5      |                |      Sample_7     |     Sample_8      |
-+-------------------+-------------------+-------------------+-------------------+
-|     Sample_9      |                   |                   |                   |
-+-------------------+-------------------+-------------------+-------------------+
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|    Category_1     |    Category_2     |     Category_3    |        ...        |    Category_N     |
++===================+===================+===================+===================+===================+
+|     Sample_1      |      Sample_2     |      Sample_3     |        ...        |     Sample_4      |
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|     Sample_5      |                   |      Sample_7     |        ...        |     Sample_8      |
++-------------------+-------------------+-------------------+-------------------+-------------------+
+|     Sample_9      |                   |                   |                   |                   |
++-------------------+-------------------+-------------------+-------------------+-------------------+
 
-.
 
 .. class:: infomark
 
 You can name your column as you want. It supports empty field.
 
-
--------------
-No InfoFile :
--------------
-
-**If you don't provide an InfoFile, you can not make a pair analysis.** (see **Figure 1**)
-
-.. class:: warningmark
-
-Only one category will be consider by the tool to compute the frequency.
-
-----------
-Pair :
-----------
-
-**If you choose a pair analysis, you must provide an InfoFile.**
-
-.. class:: infomark
-
-The tool will add an annotation on the statut of the variant as describe in Figure 3.
-
-.. class:: warningmark
-
-You must provide an InfoFile that begin with "Normal".
-
-.. class:: warningmark
-
-You can not provide an InfoFile with more than 3 column (Normal - Tumor - Duplicate).
-
-
-**If you don't choose a pair analysis, you don't need to provide an InfoFile.**
-
-.. class:: infomark
-
-Even if you provide an InfoFile that begin by "Normal", you will not have any annotation other than the variant frequency if input field paired analysis is "No".
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -222,30 +175,31 @@ Even if you provide an InfoFile that begin by "Normal", you will not have any an
 **Output**
 ==========
 
-HotSpot tool generates two files : (see **Figure 2**)
+HotSpot generates two files : (see **Figure 1**)
 
 **I - Variants_summary.vcf:**
 
-+ This file contains **all unique variants detected in the dataset**, annotated with counts and frequencies in each user-defined category and with sample name in which they were found.
++ This file contains **all unique variants detected in the dataset collection**, annotated with counts and frequencies in each user-defined category and with sample name in which they were found.
 
 
 
 **II - Annotated_dataset:**
 
 + This output is a collection that contains **all the input files annotated** with variant frequencies and counts in each user-defined category.
-+ If working with the case scenario "Normal-Tumor-Duplicates", an additional annotation is included on variant germline or somatic status (see Figure 3).
++ In the paired-analysis mode, an additional annotation is included on variant germline or somatic status (see Figure 2).
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 =============================
-Figure 2 - HotSpot workflow
+Figure 1 - HotSpot workflow
 =============================
 
 .. image:: hotspot.png
-:height: 412
-:width: 562
+	:height: 412
+	:width: 562
+
 
 .. class:: infomark
 
@@ -253,29 +207,36 @@ Figure 2 - HotSpot workflow
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
-=========================================================
-Figure 3 - Annotation for Normal-Tumor(-Replicate) pairs
-=========================================================
+===================================================================
+Figure 2 - Rules for annotating variant status in paired-analysis
+===================================================================
 
 .. image:: annotation.png
-:height: 412
-:width: 562
+	:height: 412
+	:width: 562
+
 
 .. class:: infomark
 
-**Example of annotation of variants in the case "Normal-Tumor-Replicates"**
+**Confirmed is used to describe mutations found in at least 2 samples.**
 
 .. class:: infomark
 
-**For a variant annotated as Somatic, if it's find in the Tumor twice (Replicates also), it will be annotated as Somatic **confirmed** if there is a normal sample for this individual and the variant was not found.**
+**If no replicates are used, somatic not confirmed is used by default.**
 
-.. class:: infomark
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
-**For a variant annotated as Somatic, if it's find in the Tumor once (Tumor or Replicate), it will be annotated as Somatic **not confirmed** if there is a normal sample for this individual and the variant was not found.**
+**Contact**
 
-.. class:: infomark
+robitaillea@students.iarc.fr; ardinm@fellows.iarc.fr; cahaisv@iarc.fr
 
-**For a variant annotated as Somatic, if it's find in the Tumor once (Tumor or Replicate) or twice (Tumor and Replicate), it will be annotated as Somatic **NA** if there is **no** a normal sample for this individual**
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
 
 </help>
 </tool>

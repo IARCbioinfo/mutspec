@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude / Vincent           #
 # Script: mutspecFilter.pl          #
-# Last update: 21/10/16             #
+# Last update: 01/02/17             #
 #-----------------------------------#
 
 use strict;
@@ -13,16 +13,16 @@ use Pod::Usage;
 use File::Basename; # my ($filename, $directories, $suffix) = fileparse($file, qr/\.[^.]*/);
 use File::Path;
 
-################################################################################################################################################################################
-#																																		Filter an Annotaed file with Annovar																		  																 #
-################################################################################################################################################################################
+#########################################################################################################################################################
+#																																		Filter an Annotaed file with Annovar																		  				  #
+#########################################################################################################################################################
 
 our ($verbose, $man, $help)             = (0, 0, 0);    # Parse options and print usage if there is a syntax error, or if usage was explicitly requested.
-our ($dbSNP_value, $segDup, $esp, $thG, $exac) = (0, 0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome, Exac.
+our ($dbSNP_value, $segDup, $esp, $thG, $exac) = (0, 0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome, ExAC.
 our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
-our ($listAVDB)                         = "empty";      # Text file with the list Annovar databases.
-our ($dir)                              = "";           # Path to BED file to filter against
-our (@filters);
+our ($listAVDB)                         = "empty";      # Text file with the list of Annovar databases.
+our ($dir)                              = "";						# Directory containing the script + the text file with the list of Annovar databases
+our (@filters);																					# Path to BED file(s) to filter against
 
 GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'exac'=>\$exac, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
 
@@ -46,8 +46,9 @@ if($listAVDB eq "empty") { $listAVDB = "$dir/${refGenome}_listAVDB.txt" }
 # Zero databases is specified
 if( ($dbSNP == 0) && ($segDup == 0) && ($esp == 0) && ($thG == 0) && ($exac == 0) && (scalar(@filters) == 0) )
 {
+	print STDERR "Error message:\n";
 	print STDERR "There is no databases selected for filtering against!!!\n";
-	print STDERR "Please chose at least one between dbSNP, SegDup, ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
+	print STDERR "Please chose at least one between dbSNP, SegDup (only for human and mouse genomes), ESP (only for human genome), 1000 genome (only for human genome) or ExAC (only for human genome)\n";
 	print STDERR "Or specify a BED file\n";
 	exit;
 }
@@ -89,8 +90,10 @@ $nbVariantsIn =~ /(\d+).+/;
 my $nbLineIn  = $1;
 if($nbLineIn == 1)
 {
-	print STDOUT "\nThere is no variant to be filtered for $filename\n";
-	print STDOUT "Check MutSpecAnnot tool standard output for more informations\n";
+	print STDERR "Error message:\n";
+	print STDERR "\nThere is no variant to be filtered for $filename\n";
+	print STDERR "Check MutSpecAnnot standard output for more informations\n";
+	exit;
 }
 else
 {
@@ -100,7 +103,8 @@ else
 	my $nbLineOut  = $1;
 	if($nbLineOut == 1)
 	{
-		print STDOUT "\nAll the variants were filtered for $filenameOut\n";
+		print STDOUT "Warning message:\n";
+		print STDOUT "\nAll the variants were filtered out for $filenameOut\n";
 	}
 }
 
@@ -248,7 +252,6 @@ sub ExtractAVDBName
 		elsif($$refS_month == 10) { $$refS_month = "oct"; }
 		elsif($$refS_month == 11) { $$refS_month = "nov"; }
 		elsif($$refS_month == 12) { $$refS_month = "dec"; }
-		else { print STDERR "Month number don't considered\n"; exit; }
 	}
 }
 
@@ -277,7 +280,12 @@ sub recoverNumCol
 		  if($name_of_column_NB eq "toto") { next; }
 		  else                             { return $name_of_column_NB; }
 		}
-		if($name_of_column eq "toto") { print "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
+		if($name_of_column eq "toto")
+		{
+			print STDERR "Error message:\n";
+			print STDERR "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n";
+			exit;
+		}
 	}
 	# Only one name is pass
 	else
@@ -292,8 +300,16 @@ sub recoverNumCol
 	  {
 	    if($tab_search_header[$i] eq $name_of_column) { $name_of_column_NB = $i; }
 	  }
-	  if($name_of_column_NB eq "toto") { print "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n"; exit; }
-	  else                        { return $name_of_column_NB; }
+	  if($name_of_column_NB eq "toto")
+	  {
+	  	print STDERR "Error message:\n";
+	  	print STDERR "Error recoverNumCol: the column named $name_of_column doesn't exits in the input file $input!!!!!\n";
+	  	exit;
+	  }
+	  else
+	  {
+	  	return $name_of_column_NB;
+	  }
 	}
 }
 
@@ -320,7 +336,7 @@ sub filterAdditionalBED{
 
 		my ($filename, $directories, $suffix) = fileparse($filter, qr/\.[^.]*/);
 
-		print "\tFilter against BED: $filename\n";
+		print STDOUT "\tFilter against BED: $filename\n";
 
 		#find intersect
 		`sort -k1,1 -k2,2n $filter > ref`;
@@ -370,7 +386,7 @@ mutspecFilter - Filter a file annotated with MutSpec-Annot tool. Variants presen
 									 --segDup                      filter against genomic duplicate database
 									 --esp                         filter against Exome Sequencing Project database (only for human)
 									 --thG                         filter against 1000 genome database (onyl for human)
-			  -o,        --outfile <string>            name of output file
+			  -o,        --outfile <string>            path to output file
 			             --refGenome                   reference genome to use
 			             --pathAVDBList                path to the list of Annovar databases installed
 			             --filter                      path to a bed file
@@ -388,7 +404,7 @@ Function: Filter out variants present in public databases
  					mutspecFilter.pl --filter path_to_bed --refGenome hg19 --pathAVDBList path_to_the_list_of_annovar_DB --outfile output_filename input
 
 
- Version: 10-2016 (October 2016)
+ Version: 02-2017 (February 2017)
 
 
 =head1 OPTIONS
@@ -444,7 +460,7 @@ The reference genome to use.
 
 =item B<--outfile>
 
-the name of the output file
+path to output file
 
 =item B<--pathAVDBList>
 

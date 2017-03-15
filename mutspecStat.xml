@@ -4,9 +4,10 @@
 <requirements>
     <requirement type="set_environment">SCRIPT_PATH</requirement>
     <requirement type="package" version="5.18.1">perl</requirement>
-    <requirement type="package" version="3.3">weblogo</requirement>
+    <requirement type="package" version="3.5">weblogo</requirement>
     <requirement type="package" version="1.9">numpy</requirement>
-    <requirement type="package" version="3.1.2">R</requirement>
+    <requirement type="package" version="3.2.1">R</requirement>
+    <requirement type="package" version="2.11.1">fontconfig</requirement>
     <requirement type="package" version="0.1">mutspec</requirement>
 </requirements>
 
@@ -56,10 +57,13 @@
 </outputs>
 
 <stdio>
-    <regex match="FutureWarning"
-           source="both"
-           level="warning"
-           description="FutureWarning" />
+    <regex match="FutureWarning"               source="both"     level="warning"  description="FutureWarning" />
+    <regex match="Missing flag !"              source="stderr"   level="fatal"    description="You have forgotten to specify one or more arguments" />
+    <regex match="Error"                       source="stderr"   level="fatal"    description="Read error message for more details" />
+    <regex match="Erreur"                      source="both"     level="fatal"    description="Read error message for more details" />
+    <regex match="Use of uninitialized value"  source="both"     level="fatal"    description="Read error message for more details" />
+    <regex match="errors in some of the runs"  source="both"     level="fatal"    description="Specify a lower maximum number of signatures to estimate" />
+    <regex match="Couldn't locate"  source="both"     level="fatal"    description="Read error message for more details" />
 </stdio>
 
 <help>
@@ -151,6 +155,21 @@ SBS counts and frequency data are shown as tables, heatmaps or bar graphs. The h
 SBS within their trinucleotide sequence context are counted on the non-transcribed and transcribed strands of the gene region they are located in. Counts and frequencies are shown as tables or bar graphs.
 Only SBS with strand orientation annotation are considered in this analysis (strand annotation retrieved from RefSeq database).
 
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Contact**
+
+ardinm@fellows.iarc.fr; cahaisv@iarc.fr
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+**Code**
+
+The source code is available on `GitHub`__
+
+.. __: https://github.com/IARCbioinfo/mutspec.git
 
 </help>
 

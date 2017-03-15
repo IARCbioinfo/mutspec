@@ -38,6 +38,7 @@ if (length(args) == 0) { usage() }
 #-------------------------------------------------------------------------------
 suppressMessages(suppressWarnings(library(ggplot2)))
 suppressMessages(suppressWarnings(library(gridExtra)))
+suppressMessages(suppressWarnings(library(grid)))
 
 
 #-------------------------------------------------------------------------------
