@@ -216,8 +216,8 @@ sub RecoverInputFormat
 	if($inputFormat eq "vcf")
 	{
 		### MuTect2 output VCFs
-		my $testVC = `grep MuTect2 $file`;
-		if($testVC =~ /MuTect2/)
+		my $testVC = `grep MuTect $file`;
+		if($testVC =~ /MuTect/)
 		{
 			# Keep only the variants passing MuTect2 filters
 			`grep PASS $file > $folder_temp/$filename-PASS.txt`;
