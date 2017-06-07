@@ -101,7 +101,6 @@ If information provided on duplicate sample, infers somatics status of the varia
 }
 
 
-my $fileformat;		#Format of the input VCF/tabular variants files
 my @Files;			#Table of path of the input VCF/tabular variants files
 my $InfoFile;		#Path of tabular file containing name of input VCF/tabular variants files
 my $check; 			#Provide the information of why the infofile is wrong, or in case of rigth, it's a hash of the series contain in the file --> become $serie variable
@@ -131,7 +130,7 @@ my %acceptedformat=(
 "mutect2" => \@mutect2,
 "mutect" => \@mutect,
 "vcf" => \@vcf,
-"cosmic" => \@vcf,
+"cosmic" => \@cosmic,
 "icgc" => \@icgc,
 "tcga" => \@tcga,
 "ionTorrent" => \@ionTorrent,
@@ -374,7 +373,7 @@ else{
 }
 if($type!~/^Normal-Tumor-Duplicates$/){							#All the case without case with duplicates
 	foreach my $c (@ordcat){										#Foreach ordered categries name
-		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";	#Add the future column in the header
+		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";	#Add the future column in the header
 	}
 }
 else{															#Case normal-tumor-duplicate
@@ -383,7 +382,7 @@ else{															#Case normal-tumor-duplicate
 		if($c eq $header[$#header]){				#$header[$#header] eq "Duplicates" --> If duplicates next because considers as the tumor
 			next;
 		}
-		$headfinal.="\t".$c."_count\t".$c."_freq %\t".$c."_Sample";
+		$headfinal.="\t".$c."_count\t".$c."_freq\t".$c."_Sample";
 	}
 }
 
@@ -1034,10 +1033,12 @@ sub GetVar{
 	my $vcfheader="";			#Correspond to the header if vcf input file
 	my $som =-1;				#Correspond to column judgment of somatic or not by the variant caller in case of mutect and mutect 2
 	my $first = -1;
-	my ( $chr)="";
-	my ($pos)="";
-	my ($ref)="";
-	my ($alt)="";
+	my $chr="";
+	my $pos="";
+	my $ref="";
+	my $alt="";
+	my %fileformat=();
+	my $finalformat="";
 	while ( defined( my $line = <IN> ) ) {
 		chomp($line);
 		if ( $line !~ /^##/ ) {
@@ -1047,6 +1048,10 @@ sub GetVar{
 				$header=$line;
 				chomp($header);
 				foreach my $k (keys %acceptedformat){
+					$chr="";
+					$pos="";
+					$ref="";
+					$alt="";
 					for ( my $i = 0 ; $i <= $#data ; $i++ ) {
 						if($data[$i]=~/^${$acceptedformat{$k}}[0]$/){
 							$chr=$i;
@@ -1072,15 +1077,21 @@ sub GetVar{
 						}
 					}
 					if($chr ne "" && $pos ne "" && $ref ne "" && $alt ne ""){
-						#print $k."\n";
-						$fileformat=$k;
-						push(@filesformat,$fileformat);
-						last;
+						$fileformat{$k}=($chr+$pos+$ref+$alt);
 					}
 				}
-				if(!(defined($fileformat))){
+				if((scalar(keys %fileformat))<=0){
 					print "Err : Incorrect input file format. Please refer to the documentation\n";
 					exit;
+				}
+				else{
+					my $tmp=1000;
+					foreach my $k (keys %fileformat){
+						if($fileformat{$k}<=$tmp){
+							$tmp=$fileformat{$k};
+							$finalformat=$k;
+						}
+					}
 				}
 			}
 			else {
@@ -1109,6 +1120,7 @@ sub GetVar{
 		}
 	}
 	close(IN);
+	push(@filesformat,$finalformat);
 	return($header);
 }
 
