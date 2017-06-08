@@ -194,6 +194,7 @@ sub checkVariants
 			my $header = <F1>;
 			while(<F1>)
 			{
+				if (/^(\s)*$/) {next;}
 				$_      =~ s/[\r\n]+$//;
 				my @tab = split("\t", $_);
 
@@ -750,6 +751,7 @@ sub File2Hash
 	my $header = <F1>;
  	while(<F1>)
 	{
+		if (/^(\s)*$/) {next;}
 		$_      =~ s/[\r\n]+$//;
 		my @tab = split("\t", $_);
 
