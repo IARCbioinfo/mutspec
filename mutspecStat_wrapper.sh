@@ -148,11 +148,8 @@ echo "<br/> Link to individual samples <br/>" >> $html
 
 
 ## Consider only samples with at least one mutation
-for file in `ls $output_dir/Mutational_Analysis/Figures/Impact_protein_sequence`
+for name in `ls $output_dir/Mutational_Analysis/Figures/Impact_protein_sequence`
 do
-
-  name=$(echo ${file}| cut -d"=" -f2)
-  name=${name%.*}
 
   ## Pool Data is handle separately
   if [ $name = "Pool_Data" ]; then
