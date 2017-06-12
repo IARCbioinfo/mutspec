@@ -3,7 +3,7 @@
 #-----------------------------------#
 # Author: Maude                     #
 # Script: mutspecStat.pl            #
-# Last update: 09/02/17             #
+# Last update: 12/06/17             #
 #-----------------------------------#
 
 use strict;
@@ -574,8 +574,10 @@ sub WriteStatistics
 		my $heatmapCountggplot2   = "$folderFigure/Trinucleotide_Sequence_Context/$k_file/$k_file-HeatmapCount-Genomic.txt";
 		my $heatmapPercentggplot2 = "$folderFigure/Trinucleotide_Sequence_Context/$k_file/$k_file-HeatmapPercent-Genomic.txt";
 		my $triNtBarChartggplot2  = "$folderFigure/Trinucleotide_Sequence_Context/$k_file/$k_file-MutationSpectraPercent-Genomic.txt";
+		# Count of mutations per sequence context
+		my $triNtBarChartggplot2_count  = "$folderFigure/Trinucleotide_Sequence_Context/$k_file/$k_file-MutationSpectraCount-Genomic.txt";
 
-		writeTriNtGenomic($ws, $refH_file, $k_file, $colStart_matrixSeqContext, $heatmapCountggplot2, $heatmapPercentggplot2, $triNtBarChartggplot2, \$c_ca6_g, \$c_cg6_g, \$c_ct6_g, \$c_ta6_g, \$c_tc6_g, \$c_tg6_g);
+		writeTriNtGenomic($ws, $refH_file, $k_file, $colStart_matrixSeqContext, $heatmapCountggplot2, $heatmapPercentggplot2, $triNtBarChartggplot2, $$triNtBarChartggplot2_count, \$c_ca6_g, \$c_cg6_g, \$c_ct6_g, \$c_ta6_g, \$c_tc6_g, \$c_tg6_g);
 
 		# For the input matrix for NMF
 		if($k_file ne "Pool_Data") { push(@{$h_inputNMF{'Sample'}}, $k_file); }
@@ -2049,7 +2051,7 @@ sub writeDistrByChr
 # Trinucleotide sequence context on genomic strand (Panel 1)
 sub writeTriNtGenomic
 {
-	my ($ws, $refH_file, $sample, $col, $heatmapCountggplot2, $heatmapPercentggplot2, $triNtBarChartggplot2, $ref_c_ca6_g, $ref_c_cg6_g, $ref_c_ct6_g, $ref_c_ta6_g, $ref_c_tc6_g, $ref_c_tg6_g) = @_;
+	my ($ws, $refH_file, $sample, $col, $heatmapCountggplot2, $heatmapPercentggplot2, $triNtBarChartggplot2, $$triNtBarChartggplot2_count, $ref_c_ca6_g, $ref_c_cg6_g, $ref_c_ct6_g, $ref_c_ta6_g, $ref_c_tc6_g, $ref_c_tg6_g) = @_;
 
 	# Initialise the row of the panel 1
 	my $row_SeqContext6 = 4;
@@ -2066,9 +2068,12 @@ sub writeTriNtGenomic
 	open(HEATMAPPGENOMIC, ">", $heatmapPercentggplot2) or die "$!: $heatmapPercentggplot2\n";
 	print HEATMAPPGENOMIC "\tC>A\tC>G\tC>T\tT>A\tT>C\tT>G\n";
 
-	## Bar plot NMF like
+	## Bar plot NMF like (percentages)
 	open(BARPLOTNMFLIKE, ">", $triNtBarChartggplot2) or die "$!: $triNtBarChartggplot2\n";
 	print BARPLOTNMFLIKE "alteration\tcontext\tvalue\n";
+	## Bar plot NMF like (counts)
+	open(COUNTSPECTRA, ">", $triNtBarChartggplot2_count) or die "$!: $triNtBarChartggplot2_count\n";
+	print COUNTSPECTRA "alteration\tcontext\tvalue\n";
 
 
 	foreach my $k_context (sort keys %{$refH_file->{$sample}{'SeqContextG'}})
@@ -2099,6 +2104,8 @@ sub writeTriNtGenomic
 
   		# For representing the sequence context with a bar plot (NMF like style)
   		print BARPLOTNMFLIKE $k_mutation,"\t", $k_context,"\t", $percent,"\n";
+			# Count of mutations per sequence context
+			print COUNTSPECTRA $k_mutation,"\t",$k_context,"\t",$refH_file->{$sample}{'SeqContextG'}{$k_context}{$k_mutation},"\n";
 
   		# Write the count for the heatmap
   		print HEATMAPCGENOMIC $refH_file->{$sample}{'SeqContextG'}{$k_context}{$k_mutation}."\t";
@@ -2147,7 +2154,7 @@ sub writeTriNtGenomic
   	print HEATMAPPGENOMIC "\n";
   }
 	close HEATMAPCGENOMIC; close HEATMAPPGENOMIC;
-	close BARPLOTNMFLIKE;
+	close BARPLOTNMFLIKE; close COUNTSPECTRA;
 
 
 	# Write the total number of SBS per mutation type: COUNT
