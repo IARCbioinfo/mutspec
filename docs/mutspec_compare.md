@@ -9,9 +9,9 @@ The input matrix can be found in MutSpec-NMF ouput folder: NMF/Files/MatrixW-Nor
 
 - A matrix containing a set of published signatures.  
 
-Two set of published signatures are provided:
-- `Frequency-COSMIC30-Hupki.txt`: Contains the 30 mutational signatures operative in human cancer from [COSMIC](http://cancer.sanger.ac.uk/cosmic/signatures) and 4 experimental signatures obtained in mouse cells for AA, MNNG, BaP and AID published by [Olivier et al.](http://www.nature.com/articles/srep04482)
-- `Frequency-COSMIC30-Hupki-Others.txt`: Contains in addition experimental signatures obtained in mouse model for DMBA published by [Nassar et al.](http://www.nature.com/nm/journal/v21/n8/full/nm.3878.html), MNU and Urethane published by [Westcott et al.](http://www.nature.com/nature/journal/v517/n7535/full/nature13898.html).
+Two matrices of published signatures are provided:
+- `COSMIC30-Hupki-Others.txt`: Contains the 30 mutational signatures operative in human cancer from [COSMIC](http://cancer.sanger.ac.uk/cosmic/signatures), plus 4 experimental signatures obtained in Hupki mouse cells after exposure to AA, AID, BaP, MNNG published by [Olivier et al.](http://www.nature.com/articles/srep04482), plus addition experimental signatures obtained in mouse models for DMBA published by [Nassar et al.](http://www.nature.com/nm/journal/v21/n8/full/nm.3878.html), and MNU and Urethane published by [Westcott et al.](http://www.nature.com/nature/journal/v517/n7535/full/nature13898.html).
+- `sigProfiler60-Hupki-Others.txt`: Contains 60 mutational signatures identified in human cancer by the PCAWG project with the sigProfiler algorithm (https://fr.mathworks.com/matlabcentral/fileexchange/38724-sigprofiler), plus the experimental signatures described above.
 
 #### Output
 

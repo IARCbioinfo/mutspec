@@ -23,7 +23,8 @@
 <inputs>
 	<conditional name="refSignatureSource">
 		<param name="source" type="select" label="Reference signatures" help="You may select the provided file that includes published signatures (see details further below) or your own reference file">
-			<option value="fromtable">Use COSMICv72_Hupki2014</option>
+			<option value="COSMIC30-Hupki-Others_frequency.txt">COSMIC30 Hupki Others</option>
+                        <option value="sigProfiler60-Hupki-Others_frequency.txt">sigProfiler60 Hupki Others</option>
 			<option value="history">Use one from my history</option>
 		</param>
 		<when value="fromtable">

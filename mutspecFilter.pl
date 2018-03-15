@@ -21,10 +21,11 @@ our ($verbose, $man, $help)             = (0, 0, 0);    # Parse options and prin
 our ($dbSNP_value, $segDup, $esp, $thG, $exac) = (0, 0, 0, 0, 0); # For filtering agains the databases dbSNP, genomic duplicate segments, Exome Sequencing Project and 1000 genome, ExAC.
 our ($output, $refGenome)               = ("", "");     # The path for saving the result; The reference genome to use.
 our ($listAVDB)                         = "empty";      # Text file with the list of Annovar databases.
-our ($dir)                              = "";						# Directory containing the script + the text file with the list of Annovar databases
-our (@filters);																					# Path to BED file(s) to filter against
+our ($dir)                              = "";			# Directory containing the script + the text file with the list of Annovar databases
+our (@filters);											# Path to BED file(s) to filter against
+our (@remove);                                          # bedtool intersect -v or -u option
 
-GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'exac'=>\$exac, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters) or pod2usage(2);
+GetOptions('dir|d=s'=>\$dir,'verbose|v'=>\$verbose, 'help|h'=>\$help, 'man|m'=>\$man, 'dbSNP=i'=>\$dbSNP_value, 'segDup'=>\$segDup, 'esp'=>\$esp, 'thG'=>\$thG, 'exac'=>\$exac, 'outfile|o=s' => \$output, 'refGenome=s'=>\$refGenome, 'pathAVDBList=s' => \$listAVDB, 'filter=s'=> \@filters, 'remove'=s => \@remove) or pod2usage(2);
 
 our ($input) = @ARGV;
 
@@ -332,16 +333,18 @@ sub filterAdditionalBED{
 	#and sort it
 	`sort -k1,1 -k2,2n bed > sorted`;
 
+	my $c=0;
 	foreach my $filter (@filters){
-
+		
 		my ($filename, $directories, $suffix) = fileparse($filter, qr/\.[^.]*/);
 
 		print STDOUT "\tFilter against BED: $filename\n";
 
 		#find intersect
 		`sort -k1,1 -k2,2n $filter > ref`;
-		`bedtools intersect -a sorted -b ref -v -sorted > bed`;
+		`bedtools intersect -a sorted -b ref $remove[$c] -sorted > bed`;
 		`sort -k1,1 -k2,2n bed > sorted`;
+		$c++;
 	}
 
 	#generate new output
